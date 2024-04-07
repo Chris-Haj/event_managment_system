@@ -4,6 +4,8 @@ import React, {useState} from 'react';
 import './LoginPage.css'; // Import the CSS file for styling
 
 function LoginPage() {
+
+    const [sign,setSign] = useState('Sign In');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -15,16 +17,6 @@ function LoginPage() {
 
     return (
         <div className="login-container">
-            <div className='signInRegister'>
-                <button>
-                    Login
-                </button>
-                <button>
-                    Register
-                </button>
-
-            </div>
-
             <form className="login-form" onSubmit={handleSubmit}>
                 <h2>Login</h2>
                 <div className="input-group">
