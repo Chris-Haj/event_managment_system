@@ -1,111 +1,97 @@
-// src/LoginPage.js
+import React, { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import db from '../DB/firebase'; // Ensure this is the correct path to your Firebase config
 
-import React, {useState} from 'react';
-import Logo from '../Images/YovalimLogo.png'
-import './LoginPage.css'; // Import the CSS file for styling
-import {getAuth, createUserWithEmailAndPassword} from 'firebase/auth'
-import db from '../DB/firebase'
-
-
-
-function SignUp() {
+function AuthPage() {
+    const [hasAccount, setHasAccount] = useState(true); // Toggle between login and sign-up
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
     const auth = getAuth(db);
 
-    const handleSubmit = (e) => {
+    const handleSignUp = (e) => {
         e.preventDefault();
         createUserWithEmailAndPassword(auth, email, password)
             .then((userCredential) => {
                 // Signed in
-                const user = userCredential.user;
-                console.log('Account created:', user);
-                // Redirect the user or show a success message
+                console.log('Account created:', userCredential.user);
+                setHasAccount(true); // Optionally switch to login view after sign up
             })
             .catch((error) => {
-                const errorCode = error.code;
-                const errorMessage = error.message;
-                setError(`Error: ${errorCode} ${errorMessage}`);
-                // Handle errors here, such as displaying a notification
+                setError(`Error: ${error.code} ${error.message}`);
             });
     };
-    return (
-        <div>
-            <h1>Sign Up</h1>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email:</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Password:</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Sign Up</button>
-            </form>
-        </div>
-    );
-}
 
-function LoginPage() {
-
-    const [signedIn,setSignedIn] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-
-    const handleSubmit = (event) => {
-        event.preventDefault(); // Prevent the form from submitting in the traditional way
-        console.log(email, password); // For demonstration: log the email and password
-        // Here, you would typically handle the login logic, such as making an API call
+    const handleLogin = (e) => {
+        e.preventDefault();
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in
+                console.log('User logged in:', userCredential.user);
+            })
+            .catch((error) => {
+                setError(`Error: ${error.code} ${error.message}`);
+            });
     };
 
-    const signUpHTML =
-        <div className={''}>
-
-        </div>
-
     return (
-        <div className="login-container">
-                <img src={Logo} className="App-logo" alt="logo" />
-            <form className="login-form" onSubmit={handleSubmit}>
-                <h2>Login</h2>
-                <div className="input-group">
-                    <label htmlFor="email">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
+        <div>
+            {hasAccount ? (
+                <div>
+                    <h2>Login</h2>
+                    <form onSubmit={handleLogin}>
+                        <div>
+                            <label>Email:</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label>Password:</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button type="submit">Login</button>
+                    </form>
+                    <button onClick={() => setHasAccount(false)}>Don't have an account? Sign up here</button>
                 </div>
-                <div className="input-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
+            ) : (
+                <div>
+                    <h2>Sign Up</h2>
+                    <form onSubmit={handleSignUp}>
+                        <div>
+                            <label>Email:</label>
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div>
+                            <label>Password:</label>
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <button type="submit">Sign Up</button>
+                    </form>
+                    <button onClick={() => setHasAccount(true)}>Already have an account? Login here</button>
                 </div>
-                <button type="submit" className="login-button">Login</button>
-            </form>
+            )}
+            {error && <p>{error}</p>}
         </div>
     );
 }
 
-export default LoginPage;
+export default AuthPage;
