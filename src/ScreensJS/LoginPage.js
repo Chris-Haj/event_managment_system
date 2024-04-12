@@ -3,7 +3,7 @@ import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} fro
 import './LoginPage.css'
 import db from '../DB/firebase'; // Ensure this is the correct path to your Firebase config
 
-function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAccount }) {
+function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAccount}) {
     return (
         <div className="login-container">
             <h2>Login</h2>
@@ -37,7 +37,7 @@ function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAcco
         </div>
     );
 }
-function SignUp({ email, setEmail, password, setPassword, handleSignUp,setHasAccount }) {
+function SignUp({ email, setEmail, password, setPassword, handleSignUp,setHasAccount}) {
     return (
         <div className="login-container">
             <h2>Sign Up</h2>
