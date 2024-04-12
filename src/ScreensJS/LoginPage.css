@@ -1,0 +1,82 @@
+/* LoginPage.css */
+
+/* General styles for the login container */
+
+
+.login-container {
+    font-family: 'Arial', sans-serif;
+    max-width: 300px;
+    margin: 50px auto;
+    padding: 20px;
+    text-align: center;
+}
+
+/* Styling for the form elements */
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-sizing: border-box; /* Makes sure padding does not affect overall width */
+}
+
+/* Style for the input placeholders */
+input::placeholder {
+    color: #aaa;
+}
+
+/* Style for the login button */
+button.login-button {
+    background: linear-gradient(to right, #00B4DB, #0083B0); /* Gradient color */
+    color: white;
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+/* Hover effect for the login button */
+button.login-button:hover {
+    opacity: 0.9;
+}
+
+/* Social media buttons - use classes for Facebook, Twitter, Google icons */
+.social-media-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+/* Style for the social media icons */
+.social-icon {
+    padding: 10px;
+    color: white;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+/* Style specifically for each social media button */
+.facebook { background-color: #3b5998; }
+.twitter { background-color: #1da1f2; }
+.google { background-color: #db4437; }
+
+/* Sign up link */
+.sign-up-link {
+    display: block;
+    margin-top: 15px;
+    color: #0083B0;
+    cursor: pointer;
+}
+
+/* Style for the 'Forgot password?' link */
+.forgot-password {
+    color: #0083B0;
+    cursor: pointer;
+}
+
+/* Add additional styles here based on the specific structure of your HTML */
