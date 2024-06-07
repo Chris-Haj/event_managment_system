@@ -1,6 +1,8 @@
 import React, {useState} from 'react';
 import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth';
 import './LoginPage.css'
+import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import logo from '../Images/YovalimLogo.png';
 import db from '../DB/firebase'; // Ensure this is the correct path to your Firebase config
 
 function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAccount}) {
@@ -110,6 +112,7 @@ function AuthPage() {
 
     return (
         <div className="login-container">
+            <img src={logo} alt="logo" />
             {hasAccount ? (
                 <SignIn
                     email={email}
@@ -133,5 +136,4 @@ function AuthPage() {
         </div>
     );
 }
-
 export default AuthPage;
