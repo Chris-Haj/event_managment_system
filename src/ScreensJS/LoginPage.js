@@ -1,11 +1,15 @@
-import React, {useState} from 'react';
-import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from 'firebase/auth';
-import './LoginPage.css'
+import React, { useState } from 'react';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from '../Images/YovalimLogo.png';
-import db from '../DB/firebase'; // Ensure this is the correct path to your Firebase config
+import db from '../DB/firebase';
+import './LoginPage.css';
 
-function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAccount}) {
+// import AdminDashboard from './AdminDashboard';  // Make sure to create this component
+
+function SignIn({ email, setEmail, password, setPassword, handleLogin, setHasAccount }) {
     return (
         <div className="login-container">
             <h2>Login</h2>
@@ -30,7 +34,7 @@ function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAcco
                         required
                     />
                 </div>
-                <button type="submit" className="login-button">Login</button>
+                <button type="submit" className="btn btn-primary btn-block mb-4">Login</button>
             </form>
             <div className="forgot-password">Forgot password?</div>
             <div className="toggle-form">
@@ -39,7 +43,8 @@ function SignIn({ email, setEmail, password, setPassword, handleLogin,setHasAcco
         </div>
     );
 }
-function SignUp({ email, setEmail, password, setPassword, handleSignUp,setHasAccount}) {
+
+function SignUp({ email, setEmail, password, setPassword, handleSignUp, setHasAccount }) {
     return (
         <div className="login-container">
             <h2>Sign Up</h2>
@@ -64,7 +69,7 @@ function SignUp({ email, setEmail, password, setPassword, handleSignUp,setHasAcc
                         required
                     />
                 </div>
-                <button type="submit" className="login-button">Sign Up</button>
+                <button type="submit" className="btn btn-primary btn-block mb-4">Sign Up</button>
             </form>
             <div className="toggle-form">
                 Already have an account? <span className="sign-up-link" onClick={() => setHasAccount(true)}>Login here</span>
@@ -73,41 +78,45 @@ function SignUp({ email, setEmail, password, setPassword, handleSignUp,setHasAcc
     );
 }
 
-
 function AuthPage() {
-
-    const [hasAccount, setHasAccount] = useState(true); // Toggle between login and sign-up
+    const [hasAccount, setHasAccount] = useState(true);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+
     const auth = getAuth(db);
 
-    const handleSignUp = (e) => {
+    const handleSignUp = async (e) => {
         e.preventDefault();
-        createUserWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Signed in
-                console.log('Account created:', userCredential.user);
-                setHasAccount(true); // Optionally switch to login view after sign up
-                setEmail('');
-                setPassword('');
-                error && setError('');
-            })
-            .catch((error) => {
-                setError(`Error: ${error.code} ${error.message}`);
-            });
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            await setDoc(doc(db, 'users', user.uid), { role: 'user' });
+            setHasAccount(true);
+            setEmail('');
+            setPassword('');
+            setError('');
+        } catch (error) {
+            setError(`Error: ${error.code} ${error.message}`);
+        }
     };
 
-    const handleLogin = (e) => {
+    const handleLogin = async (e) => {
         e.preventDefault();
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                // Signed in
-                console.log('User logged in:', userCredential.user);
-            })
-            .catch((error) => {
-                setError(`Error: ${error.code} ${error.message}`);
-            });
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+            const docRef = doc(db, 'users', user.uid);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists() && docSnap.data().role === 'admin') {
+                console.log('Admin logged in');
+                // Redirect to admin dashboard
+            } else {
+                console.log('User logged in');
+            }
+        } catch (error) {
+            setError(`Error: ${error.code} ${error.message}`);
+        }
     };
 
     return (
@@ -136,4 +145,5 @@ function AuthPage() {
         </div>
     );
 }
+
 export default AuthPage;
