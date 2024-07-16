@@ -58,6 +58,7 @@ function SignUp({
                     setBirthDate,
                 }) {
     const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+    const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]; // Get date 100 years ago in YYYY-MM-DD format
 
     return (
         <div>
@@ -91,6 +92,7 @@ function SignUp({
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                         max={currentDate} // Set the max attribute to the current date
+                        min={minDate}
                         required
                     />
                 </div>
