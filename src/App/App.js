@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import LoginPage from '../ScreensJS/LoginPage.js'
-import ViewEvents from '../ScreensJS/ViewEvents.js'
+import EventsPage from '../ScreensJS/Events.js'
 import {BrowserRouter as Router, Route, Routes, Navigate} from "react-router-dom";
 
 function App() {
@@ -12,7 +12,7 @@ function App() {
         <Router>
             <Routes>
                 <Route path="/" element={isLoggedIn ? <Navigate replace to="/posts" /> : <LoginPage onLogin={handleLogin} />} />
-                <Route path="/posts" element={isLoggedIn ? <ViewEvents /> : <Navigate replace to="/" />} />
+                <Route path="/events" element={isLoggedIn ? <EventsPage /> : <Navigate replace to="/" />} />
             </Routes>
         </Router>
     )

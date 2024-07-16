@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import logo from '../Images/YovalimLogo.png';
-import db from '../DB/firebase';
-import './LoginPage.css';
-
-// import AdminDashboard from './AdminDashboard';  // Make sure to create this component
+import db from '../DB/firebase'; // Ensure this is the correct path to your Firebase config
+import app from '../DB/firebase.js'
 
 function SignIn({ email, setEmail, password, setPassword, handleLogin, setHasAccount }) {
     return (
@@ -83,8 +80,7 @@ function AuthPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-
-    const auth = getAuth(db);
+    const auth = getAuth();
 
     const handleSignUp = async (e) => {
         e.preventDefault();
