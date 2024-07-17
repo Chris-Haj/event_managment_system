@@ -92,7 +92,7 @@ function SignUp({
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                         max={currentDate} // Set the max attribute to the current date
-                        min={minDate}
+                        min={minDate} // Set the min attribute to 100 years ago
                         required
                     />
                 </div>
