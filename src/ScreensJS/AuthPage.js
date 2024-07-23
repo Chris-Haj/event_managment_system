@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useRef ,useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -42,23 +42,36 @@ function SignIn({ email, setEmail, password, setPassword, handleLogin, setHasAcc
 }
 
 function SignUp({
-                    email,
-                    setEmail,
-                    password,
-                    setPassword,
-                    confirmPassword,
-                    setConfirmPassword,
-                    handleSignUp,
-                    setHasAccount,
-                    firstName,
-                    setFirstName,
-                    lastName,
-                    setLastName,
-                    birthDate,
-                    setBirthDate,
-                }) {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    handleSignUp,
+    setHasAccount,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    birthDate,
+    setBirthDate,
+}) {
     const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
     const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]; // Get date 100 years ago in YYYY-MM-DD format
+    const birthDateInputRef = useRef();
+
+    const handleFocus = () => {
+        if (birthDateInputRef.current) {
+            birthDateInputRef.current.type = 'date';
+        }
+    };
+
+    const handleBlur = () => {
+        if (birthDateInputRef.current && !birthDate) {
+            birthDateInputRef.current.type = 'text';
+        }
+    };
 
     return (
         <div>
@@ -84,15 +97,18 @@ function SignUp({
                         required
                     />
                 </div>
-                <div className="input-group mb-3">
+                <div className="input-group mb-3 position-relative">
                     <input
-                        type="date"
+                        type="text"
                         className="form-control"
                         placeholder="Birth Date"
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
-                        max={currentDate} // Set the max attribute to the current date
-                        min={minDate} // Set the min attribute to 100 years ago
+                        onFocus={handleFocus}
+                        onBlur={handleBlur}
+                        ref={birthDateInputRef}
+                        max={currentDate}
+                        min={minDate}
                         required
                     />
                 </div>
@@ -134,6 +150,7 @@ function SignUp({
         </div>
     );
 }
+
 
 function AuthPage({ onLogin }) {
     const [hasAccount, setHasAccount] = useState(true);

@@ -13,10 +13,10 @@
 
 /* Styling for the form elements */
 input[type="email"],
-input[type="password"] {
+input[type="password"],input[type="date"],input[type="text"] {
     width: 100%;
     padding: 10px;
-    margin: 10px 0;
+    margin: 1vh 0.5vw;
     border: 1px solid #ddd;
     border-radius: 5px;
     box-sizing: border-box; /* Makes sure padding does not affect overall width */
@@ -44,22 +44,6 @@ button.login-button:hover {
     opacity: 0.9;
 }
 
-/* Social media buttons - use classes for Facebook, Twitter, Google icons */
-.social-media-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-top: 15px;
-}
-
-/* Style for the social media icons */
-.social-icon {
-    padding: 10px;
-    color: white;
-    border-radius: 50%;
-    cursor: pointer;
-}
-
 /* Style specifically for each social media button */
 .facebook { background-color: #3b5998; }
 .twitter { background-color: #1da1f2; }
@@ -80,3 +64,16 @@ button.login-button:hover {
 }
 
 /* Add additional styles here based on the specific structure of your HTML */
+.input-group input[type="date"] {
+    color: transparent; /* Hide the default value */
+}
+
+.input-group input[type="date"]:valid {
+    color: black; /* Show the value when the input is valid */
+}
+
+/* Custom placeholder for the date input */
+/*.input-group input[type="text"]::placeholder {*/
+/*    color: #aaa;*/
+/*    opacity: 1; !* Make sure the placeholder is visible *!*/
+/*}*/

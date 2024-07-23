@@ -1,14 +1,30 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Navbar, Nav, Container, NavDropdown } from 'react-bootstrap';
 import { FaBars } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 import AuthContext from '../context/AuthContext';
+import db from '../DB/firebase'; // Import your Firestore instance
 import './FloatingBar.css';
 
 const FloatingBar = ({ toggleSidebar }) => {
     const { currentUser } = useContext(AuthContext);
+    const [firstName, setFirstName] = useState('');
     const auth = getAuth();
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            if (currentUser) {
+                const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
+                if (userDoc.exists()) {
+                    setFirstName(userDoc.data().firstName);
+                }
+            }
+        };
+
+        fetchUserData();
+    }, [currentUser]);
 
     const handleSignOut = () => {
         signOut(auth).then(() => {
@@ -25,7 +41,7 @@ const FloatingBar = ({ toggleSidebar }) => {
                     <FaBars size={20} />
                 </Navbar.Brand>
                 <Nav className="ml-auto">
-                    <NavDropdown title={currentUser?.displayName || "User"} id="basic-nav-dropdown">
+                    <NavDropdown title={firstName || "User"} id="basic-nav-dropdown">
                         <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
                         <NavDropdown.Item onClick={handleSignOut}>Logout</NavDropdown.Item>
                     </NavDropdown>
