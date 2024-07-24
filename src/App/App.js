@@ -5,6 +5,7 @@ import EventsPage from '../ScreensJS/Events';
 import AuthContext from '../context/AuthContext';
 import FloatingBar from '../components/FloatingBar';
 import SideBar from '../components/SideBar';
+import EventOptions from "../ScreensJS/EventOptions";
 
 function App() {
     const { currentUser } = useContext(AuthContext);
@@ -21,7 +22,7 @@ function App() {
             <Routes>
                 <Route path="/" element={currentUser ? <Navigate replace to="/events" /> : <AuthPage />} />
                 <Route path="/events" element={currentUser ? <EventsPage /> : <Navigate replace to="/" />} />
-                {/* Add other routes here */}
+                <Route path="/event-options" element={currentUser && currentUser.role === 'admin' ? <EventOptions /> : <Navigate replace to="/" />} />
             </Routes>
         </Router>
     );

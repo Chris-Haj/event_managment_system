@@ -11,6 +11,7 @@ import './FloatingBar.css';
 const FloatingBar = ({ toggleSidebar }) => {
     const { currentUser } = useContext(AuthContext);
     const [firstName, setFirstName] = useState('');
+    const [isAdmin, setIsAdmin] = useState(false);
     const auth = getAuth();
 
     useEffect(() => {
@@ -18,7 +19,11 @@ const FloatingBar = ({ toggleSidebar }) => {
             if (currentUser) {
                 const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
                 if (userDoc.exists()) {
-                    setFirstName(userDoc.data().firstName);
+                    const userData = userDoc.data();
+                    setFirstName(userData.firstName);
+                    if (userData.role === 'admin') {
+                        setIsAdmin(true);
+                    }
                 }
             }
         };
@@ -43,6 +48,7 @@ const FloatingBar = ({ toggleSidebar }) => {
                 <Nav className="ml-auto">
                     <NavDropdown title={firstName || "User"} id="basic-nav-dropdown">
                         <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
+                        {isAdmin && <NavDropdown.Item as={Link} to="/event-options">EventOptions</NavDropdown.Item>}
                         <NavDropdown.Item onClick={handleSignOut}>Logout</NavDropdown.Item>
                     </NavDropdown>
                 </Nav>
