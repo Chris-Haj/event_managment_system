@@ -1,8 +1,10 @@
 /* src/components/FloatingBar.css */
 
 .floating-bar {
+    position: sticky;
     background-color: #f8f9fa;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    z-index: 1030; /* Ensure it is above other elements */
-    /*position: fixed;*/
+    z-index: 1030;
+    margin-bottom: 10px;
 }
+

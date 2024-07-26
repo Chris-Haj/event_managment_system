@@ -2,10 +2,10 @@ import React, { useContext, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import AuthPage from '../ScreensJS/AuthPage';
 import EventsPage from '../ScreensJS/Events';
+import ManageBase from '../ScreensJS/ManageBase';
 import AuthContext from '../context/AuthContext';
 import FloatingBar from '../components/FloatingBar';
 import SideBar from '../components/SideBar';
-import EventOptions from "../ScreensJS/EventOptions";
 
 function App() {
     const { currentUser } = useContext(AuthContext);
@@ -22,7 +22,7 @@ function App() {
             <Routes>
                 <Route path="/" element={currentUser ? <Navigate replace to="/events" /> : <AuthPage />} />
                 <Route path="/events" element={currentUser ? <EventsPage /> : <Navigate replace to="/" />} />
-                <Route path="/event-options" element={currentUser && currentUser.role === 'admin' ? <EventOptions /> : <Navigate replace to="/" />} />
+                <Route path="/manage-base" element={currentUser && currentUser.role === 'admin' ? <ManageBase /> : <Navigate replace to="/" />} />
             </Routes>
         </Router>
     );

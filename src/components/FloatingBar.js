@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { getAuth, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import AuthContext from '../context/AuthContext';
-import db from '../DB/firebase'; // Import your Firestore instance
+import db from '../DB/firebase';
 import './FloatingBar.css';
 
 const FloatingBar = ({ toggleSidebar }) => {
@@ -48,7 +48,7 @@ const FloatingBar = ({ toggleSidebar }) => {
                 <Nav className="ml-auto">
                     <NavDropdown title={firstName || "User"} id="basic-nav-dropdown">
                         <NavDropdown.Item as={Link} to="/profile">Profile</NavDropdown.Item>
-                        {isAdmin && <NavDropdown.Item as={Link} to="/event-options">EventOptions</NavDropdown.Item>}
+                        {isAdmin && <NavDropdown.Item as={Link} to="/manage-base">ManageBase</NavDropdown.Item>}
                         <NavDropdown.Item onClick={handleSignOut}>Logout</NavDropdown.Item>
                     </NavDropdown>
                 </Nav>

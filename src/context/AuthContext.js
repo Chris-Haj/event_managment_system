@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import db from '../DB/firebase';
 
 const AuthContext = createContext();
 
@@ -9,9 +11,20 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const auth = getAuth();
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
-            console.log('Auth state changed:', user); // Debug log
-            setCurrentUser(user);
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                if (userDoc.exists()) {
+                    setCurrentUser({
+                        ...user,
+                        role: userDoc.data().role
+                    });
+                } else {
+                    setCurrentUser(user);
+                }
+            } else {
+                setCurrentUser(null);
+            }
             setLoading(false);
         });
 
@@ -20,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={{ currentUser }}>
-            {loading ? <p>Loading...</p> : children} {/* Render loading state */}
+            {!loading && children}
         </AuthContext.Provider>
     );
 };
