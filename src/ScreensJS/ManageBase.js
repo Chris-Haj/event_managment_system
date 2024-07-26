@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import db from '../DB/firebase'; // Ensure this is the correct path to your Firebase config
+import db from '../DB/firebase';
+import './ManageBase.css';
 
 const ManageBase = () => {
     const [name, setName] = useState('');
@@ -51,7 +52,7 @@ const ManageBase = () => {
     return (
         <div>
             <h1>ManageBase</h1>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="manage-base-container">
                 <div className="mb-3">
                     <label htmlFor="eventName" className="form-label">Event Name</label>
                     <input
