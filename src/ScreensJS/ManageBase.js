@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import TimePicker from 'react-time-picker';
 import db from '../DB/firebase';
 import './ManageBase.css';
+import 'react-time-picker/dist/TimePicker.css';
 
 const ManageBase = () => {
     const [name, setName] = useState('');
@@ -29,9 +32,15 @@ const ManageBase = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Handle the image upload to Firebase Storage if required
-
         try {
+            let imageUrl = '';
+            if (image) {
+                const storage = getStorage();
+                const storageRef = ref(storage, `event_images/${image.name}`);
+                await uploadBytes(storageRef, image);
+                imageUrl = await getDownloadURL(storageRef);
+            }
+
             const docRef = await addDoc(collection(db, 'events'), {
                 name,
                 date,
@@ -45,7 +54,7 @@ const ManageBase = () => {
                     recommendedAge,
                     dressCode
                 },
-                // Include the image URL if uploaded
+                imageUrl: imageUrl || '' // Save imageUrl if available
             });
             console.log("Document written with ID: ", docRef.id);
             // Reset form
@@ -91,23 +100,23 @@ const ManageBase = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="timeStart" className="form-label">Start Time</label>
-                    <input
-                        type="time"
-                        className="form-control"
-                        id="timeStart"
+                    <TimePicker
+                        onChange={setTimeStart}
                         value={timeStart}
-                        onChange={(e) => setTimeStart(e.target.value)}
+                        disableClock={true}
+                        format="HH:mm"
+                        step={15}
                         required
                     />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="timeEnd" className="form-label">End Time</label>
-                    <input
-                        type="time"
-                        className="form-control"
-                        id="timeEnd"
+                    <TimePicker
+                        onChange={setTimeEnd}
                         value={timeEnd}
-                        onChange={(e) => setTimeEnd(e.target.value)}
+                        disableClock={true}
+                        format="HH:mm"
+                        step={15}
                         required
                     />
                 </div>
