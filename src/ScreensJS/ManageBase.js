@@ -6,11 +6,13 @@ import './ManageBase.css';
 const ManageBase = () => {
     const [name, setName] = useState('');
     const [date, setDate] = useState('');
-    const [time, setTime] = useState('');
+    const [timeStart, setTimeStart] = useState('');
+    const [timeEnd, setTimeEnd] = useState('');
     const [mainArea, setMainArea] = useState('');
     const [specificPlace, setSpecificPlace] = useState('');
     const [recommendedAge, setRecommendedAge] = useState([]);
     const [dressCode, setDressCode] = useState('');
+    const [image, setImage] = useState(null);
 
     const handleCheckboxChange = (e) => {
         const { value, checked } = e.target;
@@ -19,13 +21,22 @@ const ManageBase = () => {
         );
     };
 
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            setImage(e.target.files[0]);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Handle the image upload to Firebase Storage if required
+
         try {
             const docRef = await addDoc(collection(db, 'events'), {
                 name,
                 date,
-                time,
+                timeStart,
+                timeEnd,
                 location: {
                     mainArea,
                     specificPlace
@@ -33,26 +44,29 @@ const ManageBase = () => {
                 characteristics: {
                     recommendedAge,
                     dressCode
-                }
+                },
+                // Include the image URL if uploaded
             });
             console.log("Document written with ID: ", docRef.id);
             // Reset form
             setName('');
             setDate('');
-            setTime('');
+            setTimeStart('');
+            setTimeEnd('');
             setMainArea('');
             setSpecificPlace('');
             setRecommendedAge([]);
             setDressCode('');
+            setImage(null);
         } catch (e) {
             console.error("Error adding document: ", e);
         }
     };
 
     return (
-        <div>
+        <div className="manage-base-container">
             <h1>ManageBase</h1>
-            <form onSubmit={handleSubmit} className="manage-base-container">
+            <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                     <label htmlFor="eventName" className="form-label">Event Name</label>
                     <input
@@ -76,13 +90,24 @@ const ManageBase = () => {
                     />
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="eventTime" className="form-label">Event Time</label>
+                    <label htmlFor="timeStart" className="form-label">Start Time</label>
                     <input
                         type="time"
                         className="form-control"
-                        id="eventTime"
-                        value={time}
-                        onChange={(e) => setTime(e.target.value)}
+                        id="timeStart"
+                        value={timeStart}
+                        onChange={(e) => setTimeStart(e.target.value)}
+                        required
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="timeEnd" className="form-label">End Time</label>
+                    <input
+                        type="time"
+                        className="form-control"
+                        id="timeEnd"
+                        value={timeEnd}
+                        onChange={(e) => setTimeEnd(e.target.value)}
                         required
                     />
                 </div>
@@ -155,6 +180,16 @@ const ManageBase = () => {
                         <option value="Formal">Formal</option>
                         <option value="Costume">Costume</option>
                     </select>
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="eventImage" className="form-label">Event Image</label>
+                    <input
+                        type="file"
+                        className="form-control"
+                        id="eventImage"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                    />
                 </div>
                 <button type="submit" className="btn btn-primary">Add Event</button>
             </form>

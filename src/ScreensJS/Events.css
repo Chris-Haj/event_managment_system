@@ -1,0 +1,25 @@
+.events-container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.card-header {
+    background-color: #fff;
+    border-bottom: none;
+}
+
+.card-title {
+    margin-bottom: 0;
+    font-size: 1.25rem;
+}
+
+.card-text {
+    margin-bottom: 0.5rem;
+}
+
+.card-img-top {
+    height: 150px;
+    object-fit: contain; /* Ensure the logo fits well */
+    padding: 10px; /* Add padding to give some space around the logo */
+    background-color: #f8f9fa; /* Optional: Add a background color to the image area */
+}
