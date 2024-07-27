@@ -1,6 +1,6 @@
 
 .manage-base-container {
-    width: 80%;
+    width: 95%;
     margin: 0 auto;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -9,7 +9,5 @@
 }
 
 .MainDiv {
-    margin: 20px;
-
-
+    /*margin: 20px;*/
 }

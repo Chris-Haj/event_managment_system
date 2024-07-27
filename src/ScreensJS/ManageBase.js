@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import TimePicker from 'react-time-picker';
 import db from '../DB/firebase';
 import './ManageBase.css';
-import 'react-time-picker/dist/TimePicker.css';
+import ViewEvents from '../components/ViewEvents'; // Import the ViewEvents component
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 
 const ManageBase = () => {
+    const [activeTab, setActiveTab] = useState('1');
     const [name, setName] = useState('');
     const [date, setDate] = useState('');
     const [timeStart, setTimeStart] = useState('');
@@ -16,6 +18,10 @@ const ManageBase = () => {
     const [recommendedAge, setRecommendedAge] = useState([]);
     const [dressCode, setDressCode] = useState('');
     const [image, setImage] = useState(null);
+
+    const toggle = tab => {
+        if (activeTab !== tab) setActiveTab(tab);
+    };
 
     const handleCheckboxChange = (e) => {
         const { value, checked } = e.target;
@@ -74,134 +80,159 @@ const ManageBase = () => {
 
     return (
         <div className="manage-base-container">
-            <h1>ManageBase</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="eventName" className="form-label">Event Name</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="eventName"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="eventDate" className="form-label">Event Date</label>
-                    <input
-                        type="date"
-                        className="form-control"
-                        id="eventDate"
-                        value={date}
-                        onChange={(e) => setDate(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="timeStart" className="form-label">Start Time</label>
-                    <TimePicker
-                        onChange={setTimeStart}
-                        value={timeStart}
-                        disableClock={true}
-                        format="HH:mm"
-                        step={15}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="timeEnd" className="form-label">End Time</label>
-                    <TimePicker
-                        onChange={setTimeEnd}
-                        value={timeEnd}
-                        disableClock={true}
-                        format="HH:mm"
-                        step={15}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="mainArea" className="form-label">Main Area</label>
-                    <select
-                        className="form-select"
-                        id="mainArea"
-                        value={mainArea}
-                        onChange={(e) => setMainArea(e.target.value)}
-                        required
+            <Nav tabs className="justify-content-center mb-4">
+                <NavItem>
+                    <NavLink
+                        className={activeTab === '1' ? 'active' : ''}
+                        onClick={() => toggle('1')}
                     >
-                        <option value="">Select Main Area</option>
-                        <option value="Area1">Area 1</option>
-                        <option value="Area2">Area 2</option>
-                        <option value="Area3">Area 3</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="specificPlace" className="form-label">Specific Place</label>
-                    <select
-                        className="form-select"
-                        id="specificPlace"
-                        value={specificPlace}
-                        onChange={(e) => setSpecificPlace(e.target.value)}
-                        required
+                        View Events
+                    </NavLink>
+                </NavItem>
+                <NavItem>
+                    <NavLink
+                        className={activeTab === '2' ? 'active' : ''}
+                        onClick={() => toggle('2')}
                     >
-                        <option value="">Select Specific Place</option>
-                        <option value="Place1">Place 1</option>
-                        <option value="Place2">Place 2</option>
-                        <option value="Place3">Place 3</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label className="form-label">Recommended Age</label>
-                    <div className="form-check">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="families"
-                            value="Families"
-                            checked={recommendedAge.includes('Families')}
-                            onChange={handleCheckboxChange}
-                        />
-                        <label className="form-check-label" htmlFor="families">Families</label>
-                    </div>
-                    <div className="form-check">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="seniors"
-                            value="Senior citizens"
-                            checked={recommendedAge.includes('Senior citizens')}
-                            onChange={handleCheckboxChange}
-                        />
-                        <label className="form-check-label" htmlFor="seniors">Senior citizens</label>
-                    </div>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="dressCode" className="form-label">Dress Code</label>
-                    <select
-                        className="form-select"
-                        id="dressCode"
-                        value={dressCode}
-                        onChange={(e) => setDressCode(e.target.value)}
-                        required
-                    >
-                        <option value="">Select Dress Code</option>
-                        <option value="Casual">Casual</option>
-                        <option value="Formal">Formal</option>
-                        <option value="Costume">Costume</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="eventImage" className="form-label">Event Image</label>
-                    <input
-                        type="file"
-                        className="form-control"
-                        id="eventImage"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Add Event</button>
-            </form>
+                        Add Event
+                    </NavLink>
+                </NavItem>
+            </Nav>
+            <TabContent activeTab={activeTab}>
+                <TabPane tabId="1">
+                    <ViewEvents />
+                </TabPane>
+                <TabPane tabId="2">
+                    <h1>Add Event</h1>
+                    <form onSubmit={handleSubmit}>
+                        <div className="mb-3">
+                            <label htmlFor="eventName" className="form-label">Event Name</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="eventName"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="eventDate" className="form-label">Event Date</label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                id="eventDate"
+                                value={date}
+                                onChange={(e) => setDate(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="timeStart" className="form-label">Start Time</label>
+                            <input
+                                type="time"
+                                className="form-control"
+                                id="timeStart"
+                                value={timeStart}
+                                onChange={(e) => setTimeStart(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="timeEnd" className="form-label">End Time</label>
+                            <input
+                                type="time"
+                                className="form-control"
+                                id="timeEnd"
+                                value={timeEnd}
+                                onChange={(e) => setTimeEnd(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="mainArea" className="form-label">Main Area</label>
+                            <select
+                                className="form-select"
+                                id="mainArea"
+                                value={mainArea}
+                                onChange={(e) => setMainArea(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Main Area</option>
+                                <option value="Area1">Area 1</option>
+                                <option value="Area2">Area 2</option>
+                                <option value="Area3">Area 3</option>
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="specificPlace" className="form-label">Specific Place</label>
+                            <select
+                                className="form-select"
+                                id="specificPlace"
+                                value={specificPlace}
+                                onChange={(e) => setSpecificPlace(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Specific Place</option>
+                                <option value="Place1">Place 1</option>
+                                <option value="Place2">Place 2</option>
+                                <option value="Place3">Place 3</option>
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label className="form-label">Recommended Age</label>
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="families"
+                                    value="Families"
+                                    checked={recommendedAge.includes('Families')}
+                                    onChange={handleCheckboxChange}
+                                />
+                                <label className="form-check-label" htmlFor="families">Families</label>
+                            </div>
+                            <div className="form-check">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    id="seniors"
+                                    value="Senior citizens"
+                                    checked={recommendedAge.includes('Senior citizens')}
+                                    onChange={handleCheckboxChange}
+                                />
+                                <label className="form-check-label" htmlFor="seniors">Senior citizens</label>
+                            </div>
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="dressCode" className="form-label">Dress Code</label>
+                            <select
+                                className="form-select"
+                                id="dressCode"
+                                value={dressCode}
+                                onChange={(e) => setDressCode(e.target.value)}
+                                required
+                            >
+                                <option value="">Select Dress Code</option>
+                                <option value="Casual">Casual</option>
+                                <option value="Formal">Formal</option>
+                                <option value="Costume">Costume</option>
+                            </select>
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="eventImage" className="form-label">Event Image</label>
+                            <input
+                                type="file"
+                                className="form-control"
+                                id="eventImage"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                            />
+                        </div>
+                        <button type="submit" className="btn btn-primary">Add Event</button>
+                    </form>
+                </TabPane>
+            </TabContent>
         </div>
     );
 };
