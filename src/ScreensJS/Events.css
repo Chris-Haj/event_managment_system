@@ -23,3 +23,34 @@
     padding: 10px; /* Add padding to give some space around the logo */
     background-color: #f8f9fa; /* Optional: Add a background color to the image area */
 }
+
+.info-button {
+    background-color: var(--color-primary);
+    border: none;
+    color: white;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.event-card {
+    transition: transform 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-5px);
+}
+
+.event-details {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-top: 1px solid #ddd;
+    max-height: 0; /* Start with a max height of 0 */
+    overflow: hidden; /* Hide overflowing content */
+    opacity: 0; /* Start with an opacity of 0 */
+    transition: max-height 0.3s ease, opacity 0.3s ease; /* Animate max height and opacity */
+}
+
+.event-details.show {
+    max-height: 200px; /* Set the max height to the height of the content */
+    opacity: 1; /* Set the opacity to 1 */
+}

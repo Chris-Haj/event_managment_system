@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import db from '../DB/firebase';
-import './ManageBase.css';
 import ViewEvents from '../components/ViewEvents'; // Import the ViewEvents component
-import 'bootstrap/dist/css/bootstrap.min.css';
 import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './ManageBase.css';
 
 const ManageBase = () => {
     const [activeTab, setActiveTab] = useState('1');
     const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
     const [date, setDate] = useState('');
     const [timeStart, setTimeStart] = useState('');
     const [timeEnd, setTimeEnd] = useState('');
@@ -18,6 +19,7 @@ const ManageBase = () => {
     const [recommendedAge, setRecommendedAge] = useState([]);
     const [dressCode, setDressCode] = useState('');
     const [image, setImage] = useState(null);
+    const [registrantLimit, setRegistrantLimit] = useState('');
 
     const toggle = tab => {
         if (activeTab !== tab) setActiveTab(tab);
@@ -49,6 +51,7 @@ const ManageBase = () => {
 
             const docRef = await addDoc(collection(db, 'events'), {
                 name,
+                description,
                 date,
                 timeStart,
                 timeEnd,
@@ -60,11 +63,13 @@ const ManageBase = () => {
                     recommendedAge,
                     dressCode
                 },
-                imageUrl: imageUrl || '' // Save imageUrl if available
+                imageUrl: imageUrl || '', // Save imageUrl if available
+                registrantLimit: registrantLimit || null // Save registrantLimit if available
             });
             console.log("Document written with ID: ", docRef.id);
             // Reset form
             setName('');
+            setDescription('');
             setDate('');
             setTimeStart('');
             setTimeEnd('');
@@ -73,9 +78,25 @@ const ManageBase = () => {
             setRecommendedAge([]);
             setDressCode('');
             setImage(null);
+            setRegistrantLimit('');
         } catch (e) {
             console.error("Error adding document: ", e);
         }
+    };
+
+    const handleEdit = (id) => {
+        console.log('Edit event with ID:', id);
+        // Implement the logic to edit the event
+    };
+
+    const handleDelete = (id) => {
+        console.log('Delete event with ID:', id);
+        // Implement the logic to delete the event
+    };
+
+    const handleViewRegistrants = (id) => {
+        console.log('View registrants for event with ID:', id);
+        // Implement the logic to view the registrants
     };
 
     return (
@@ -100,7 +121,7 @@ const ManageBase = () => {
             </Nav>
             <TabContent activeTab={activeTab}>
                 <TabPane tabId="1">
-                    <ViewEvents />
+                    <ViewEvents onEdit={handleEdit} onDelete={handleDelete} onViewRegistrants={handleViewRegistrants} />
                 </TabPane>
                 <TabPane tabId="2">
                     <h1>Add Event</h1>
@@ -115,6 +136,17 @@ const ManageBase = () => {
                                 onChange={(e) => setName(e.target.value)}
                                 required
                             />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="description" className="form-label">Description</label>
+                            <textarea
+                                className="form-control"
+                                id="description"
+                                rows="3"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                required
+                            ></textarea>
                         </div>
                         <div className="mb-3">
                             <label htmlFor="eventDate" className="form-label">Event Date</label>
@@ -227,6 +259,17 @@ const ManageBase = () => {
                                 id="eventImage"
                                 accept="image/*"
                                 onChange={handleImageChange}
+                            />
+                        </div>
+                        <div className="mb-3">
+                            <label htmlFor="registrantLimit" className="form-label">Registrant Limit (Optional)</label>
+                            <input
+                                type="number"
+                                className="form-control"
+                                id="registrantLimit"
+                                value={registrantLimit}
+                                onChange={(e) => setRegistrantLimit(e.target.value)}
+                                min="0"
                             />
                         </div>
                         <button type="submit" className="btn btn-primary">Add Event</button>

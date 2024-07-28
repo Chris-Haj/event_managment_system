@@ -4,6 +4,8 @@ import App from './App/App';
 import reportWebVitals from './reportWebVitals';
 import {AuthProvider} from './context/AuthContext';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './colors.css';
+
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
