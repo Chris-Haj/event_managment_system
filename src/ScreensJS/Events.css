@@ -24,12 +24,30 @@
     background-color: #f8f9fa; /* Optional: Add a background color to the image area */
 }
 
-.info-button {
-    background-color: var(--color-primary);
-    border: none;
-    color: white;
+.button-container {
+    display: flex;
+    justify-content: center;
+    width: 80%;
+    margin: 10px auto; /* Center the container */
+}
+
+.info-button, .join-button {
+    flex: 1; /* Make the buttons take up equal space */
+    margin: 0 5px; /* Add some space between the buttons */
     padding: 10px;
     cursor: pointer;
+}
+
+.info-button {
+    background-color: var(--color-accent);
+    border: none;
+    color: white;
+}
+
+.join-button {
+    background-color: var(--color-success);
+    border: none;
+    color: white;
 }
 
 .event-card {

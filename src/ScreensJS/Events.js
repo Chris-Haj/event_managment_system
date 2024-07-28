@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
@@ -28,6 +28,22 @@ const Events = () => {
         }));
     };
 
+    const handleJoinEvent = async (id) => {
+        try {
+            const eventDoc = doc(db, 'events', id);
+            // Add your logic here to update the event document to include the user as a registrant.
+            // For example, you might have a field like "registrants" in your event document where you store user IDs.
+            await updateDoc(eventDoc, {
+                // Assuming there's a "registrants" field which is an array of user IDs
+                // Replace `userId` with the actual ID of the user who is joining the event
+                registrants: [/* userId */]
+            });
+            console.log(`User joined event with ID: ${id}`);
+        } catch (error) {
+            console.error("Error joining event: ", error);
+        }
+    };
+
     return (
         <div className="events-container">
             <div className="row">
@@ -42,12 +58,18 @@ const Events = () => {
                                 </div>
                             </div>
                             <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event" />
-                            <div className="card-body">
+                            <div className="button-container">
                                 <button
-                                    className="btn btn-info w-100 info-button"
+                                    className="btn btn-info info-button"
                                     onClick={() => toggleDetails(event.id)}
                                 >
                                     Info
+                                </button>
+                                <button
+                                    className="btn btn-success join-button"
+                                    onClick={() => handleJoinEvent(event.id)}
+                                >
+                                    Join
                                 </button>
                             </div>
                             <div className={`card-footer event-details ${visibleDetails[event.id] ? 'show' : ''}`} id={`details-${event.id}`}>
