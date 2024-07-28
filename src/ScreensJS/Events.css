@@ -39,7 +39,7 @@
 }
 
 .info-button {
-    background-color: var(--color-accent);
+    background-color: var(--color-primary);
     border: none;
     color: white;
 }

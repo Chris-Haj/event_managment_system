@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { getFirestore, collection, getDocs, updateDoc, doc } from 'firebase/firestore';
+import React, { useEffect, useState, useContext } from 'react';
+import { getFirestore, collection, getDocs, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
+import AuthContext from '../context/AuthContext'; // Import the AuthContext
 
 const Events = () => {
+    const { currentUser } = useContext(AuthContext); // Get the current user from the AuthContext
     const [events, setEvents] = useState([]);
     const [visibleDetails, setVisibleDetails] = useState({});
+    const [modal, setModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -29,18 +34,34 @@ const Events = () => {
     };
 
     const handleJoinEvent = async (id) => {
+        if (!currentUser) {
+            setModalMessage('You need to be logged in to join an event.');
+            setModal(true);
+            return;
+        }
+
         try {
+            const userId = currentUser.uid;
             const eventDoc = doc(db, 'events', id);
-            // Add your logic here to update the event document to include the user as a registrant.
-            // For example, you might have a field like "registrants" in your event document where you store user IDs.
+            const eventSnap = await getDoc(eventDoc);
+
+            if (eventSnap.exists()) {
+                const eventData = eventSnap.data();
+                if (eventData.registrants && eventData.registrants.includes(userId)) {
+                    setModalMessage('You are already registered for this event.');
+                    setModal(true);
+                    return;
+                }
+            }
+
             await updateDoc(eventDoc, {
-                // Assuming there's a "registrants" field which is an array of user IDs
-                // Replace `userId` with the actual ID of the user who is joining the event
-                registrants: [/* userId */]
+                registrants: arrayUnion(userId)
             });
-            console.log(`User joined event with ID: ${id}`);
+            setModalMessage('Successfully registered for the event!');
+            setModal(true);
         } catch (error) {
-            console.error("Error joining event: ", error);
+            setModalMessage(`Error joining event: ${error.message}`);
+            setModal(true);
         }
     };
 
@@ -72,19 +93,30 @@ const Events = () => {
                                     Join
                                 </button>
                             </div>
-                            <div className={`card-footer event-details ${visibleDetails[event.id] ? 'show' : ''}`} id={`details-${event.id}`}>
-                                <p><strong>Description:</strong> {event.description}</p>
-                                <p><strong>Location:</strong> {event.location.mainArea}, {event.location.specificPlace}</p>
-                                <p><strong>Recommended Age:</strong> {event.characteristics.recommendedAge.join(', ')}</p>
-                                <p><strong>Dress Code:</strong> {event.characteristics.dressCode}</p>
-                                {event.registrantLimit && (
-                                    <p><strong>Registrant Cap:</strong> {event.registrantLimit}</p>
-                                )}
-                            </div>
+                            {visibleDetails[event.id] && (
+                                <div className="card-footer event-details">
+                                    <p><strong>Description:</strong> {event.description}</p>
+                                    <p><strong>Location:</strong> {event.location.mainArea}, {event.location.specificPlace}</p>
+                                    <p><strong>Recommended Age:</strong> {event.characteristics.recommendedAge.join(', ')}</p>
+                                    <p><strong>Dress Code:</strong> {event.characteristics.dressCode}</p>
+                                    {event.registrantLimit && (
+                                        <p><strong>Registrant Cap:</strong> {event.registrantLimit}</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
                 ))}
             </div>
+            <Modal isOpen={modal} toggle={() => setModal(!modal)}>
+                <ModalHeader toggle={() => setModal(!modal)}>Event Registration</ModalHeader>
+                <ModalBody>
+                    {modalMessage}
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={() => setModal(!modal)}>Close</Button>
+                </ModalFooter>
+            </Modal>
         </div>
     );
 };

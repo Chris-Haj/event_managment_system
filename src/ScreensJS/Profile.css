@@ -1,0 +1,12 @@
+.container {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.text-danger {
+    color: red;
+}
+
+.text-success {
+    color: green;
+}
