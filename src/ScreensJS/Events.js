@@ -67,6 +67,7 @@ const Events = () => {
 
     return (
         <div className="events-container">
+            <h1 className="Header">Current Events</h1>
             <div className="row">
                 {events.map(event => (
                     <div key={event.id} className="col-md-4 mb-4">

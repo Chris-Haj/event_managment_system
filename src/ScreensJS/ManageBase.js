@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import db from '../DB/firebase';
-import ViewEvents from '../components/ViewEvents'; // Import the ViewEvents component
+import ViewEvents from './ViewEvents'; // Import the ViewEvents component
 import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './ManageBase.css';
@@ -107,7 +107,7 @@ const ManageBase = () => {
                         className={activeTab === '1' ? 'active' : ''}
                         onClick={() => toggle('1')}
                     >
-                        View Events
+                        Manage Events
                     </NavLink>
                 </NavItem>
                 <NavItem>
