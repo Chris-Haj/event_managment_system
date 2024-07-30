@@ -1,14 +1,13 @@
-body{
+body {
     background: #eeffc9;
 }
 
-.Header{
+.Header {
     padding: 10px;
     margin: 20px;
     text-align: center;
     font-size: 20px;
     font-weight: bold;
-
 }
 
 .events-container {
@@ -19,6 +18,8 @@ body{
 .card-header {
     background-color: var(--color-light);
     border-bottom: none;
+    display: flex;
+    justify-content: space-between;
 }
 
 .card-title {
@@ -34,11 +35,7 @@ body{
     height: 150px;
     object-fit: contain; /* Ensure the logo fits well */
     padding: 10px; /* Add padding to give some space around the logo */
-    background: linear-gradient(
-        to right,
-        var(--color-primary),
-        var(--color-highlight)
-    ); /* Add a gradient background */
+    background: linear-gradient(to right, var(--color-primary), var(--color-highlight)); /* Add a gradient background */
 }
 
 .button-container {
@@ -79,13 +76,20 @@ body{
     background-color: rgba(255, 255, 255, 0.9);
     padding: 10px;
     border-top: 1px solid #ddd;
-    max-height: 0; /* Start with a max height of 0 */
-    overflow: hidden; /* Hide overflowing content */
-    opacity: 0; /* Start with an opacity of 0 */
     transition: max-height 0.3s ease, opacity 0.3s ease; /* Animate max height and opacity */
 }
 
-.event-details.show {
-    max-height: 200px; /* Set the max height to the height of the content */
-    opacity: 1; /* Set the opacity to 1 */
+.eventDetailsHide {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+}
+
+.eventDetailsShow {
+    max-height: 200px; /* Adjust this value based on your content */
+    opacity: 1;
+}
+
+.modal-header, .modal-body, .modal-footer {
+    text-align: center;
 }

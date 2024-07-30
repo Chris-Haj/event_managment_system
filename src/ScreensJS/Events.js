@@ -94,17 +94,15 @@ const Events = () => {
                                     Join
                                 </button>
                             </div>
-                            {visibleDetails[event.id] && (
-                                <div className="card-footer event-details">
-                                    <p><strong>Description:</strong> {event.description}</p>
-                                    <p><strong>Location:</strong> {event.location.mainArea}, {event.location.specificPlace}</p>
-                                    <p><strong>Recommended Age:</strong> {event.characteristics.recommendedAge.join(', ')}</p>
-                                    <p><strong>Dress Code:</strong> {event.characteristics.dressCode}</p>
-                                    {event.registrantLimit && (
-                                        <p><strong>Registrant Cap:</strong> {event.registrantLimit}</p>
-                                    )}
-                                </div>
-                            )}
+                            <div className={`card-footer event-details ${visibleDetails[event.id] ? 'eventDetailsShow' : 'eventDetailsHide'}`}>
+                                <p><strong>Description:</strong> {event.description}</p>
+                                <p><strong>Location:</strong> {event.location.mainArea}, {event.location.specificPlace}</p>
+                                <p><strong>Recommended Age:</strong> {event.characteristics.recommendedAge.join(', ')}</p>
+                                <p><strong>Dress Code:</strong> {event.characteristics.dressCode}</p>
+                                {event.registrantLimit && (
+                                    <p><strong>Registrant Cap:</strong> {event.registrantLimit}</p>
+                                )}
+                            </div>
                         </div>
                     </div>
                 ))}
