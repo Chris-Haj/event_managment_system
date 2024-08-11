@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { getFirestore, collection, getDocs, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';

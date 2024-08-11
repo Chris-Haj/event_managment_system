@@ -3,7 +3,7 @@ import { getFirestore, collection, addDoc } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import db from '../DB/firebase';
 import ViewEvents from './ViewEvents'; // Import the ViewEvents component
-import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
+import { Nav, NavItem, NavLink, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, Button, Spinner } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './ManageBase.css';
 
@@ -20,10 +20,15 @@ const ManageBase = () => {
     const [dressCode, setDressCode] = useState('');
     const [image, setImage] = useState(null);
     const [registrantLimit, setRegistrantLimit] = useState('');
+    const [modal, setModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const toggle = tab => {
         if (activeTab !== tab) setActiveTab(tab);
     };
+
+    const toggleModal = () => setModal(!modal);
 
     const handleCheckboxChange = (e) => {
         const { value, checked } = e.target;
@@ -40,6 +45,9 @@ const ManageBase = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setModal(true); // Open modal immediately
+        setIsLoading(true); // Show loading spinner
+
         try {
             let imageUrl = '';
             if (image) {
@@ -66,7 +74,11 @@ const ManageBase = () => {
                 imageUrl: imageUrl || '', // Save imageUrl if available
                 registrantLimit: registrantLimit || null // Save registrantLimit if available
             });
-            console.log("Document written with ID: ", docRef.id);
+
+            setModalMessage("Event successfully created!");
+            setIsLoading(false); // Hide loading spinner
+            setModal(true); // Keep modal open
+
             // Reset form
             setName('');
             setDescription('');
@@ -80,7 +92,9 @@ const ManageBase = () => {
             setImage(null);
             setRegistrantLimit('');
         } catch (e) {
-            console.error("Error adding document: ", e);
+            setModalMessage(`Error creating event: ${e.message}`);
+            setIsLoading(false); // Hide loading spinner
+            setModal(true); // Keep modal open
         }
     };
 
@@ -276,6 +290,24 @@ const ManageBase = () => {
                     </form>
                 </TabPane>
             </TabContent>
+            <Modal isOpen={modal} toggle={toggleModal}>
+                <ModalHeader toggle={toggleModal}>Event Submission</ModalHeader>
+                <ModalBody>
+                    {isLoading ? (
+                        <div className="text-center">
+                            <Spinner color="primary" />
+                            <p>Submitting your event...</p>
+                        </div>
+                    ) : (
+                        modalMessage
+                    )}
+                </ModalBody>
+                {!isLoading && (
+                    <ModalFooter>
+                        <Button color="secondary" onClick={toggleModal}>Close</Button>
+                    </ModalFooter>
+                )}
+            </Modal>
         </div>
     );
 };

@@ -1,20 +1,15 @@
-/* src/colors.css */
-
-/*:root {*/
-/*    --yellow-yovalim: #ffd206;*/
-/*    --honey-yovalim: #faaa39;*/
-/*    --grey-yovalim: #5a5859;*/
-/*    --teal-yovalim: #b3d337;*/
-/*    --pink-yovalim: #ed0a79;*/
-/*    --blue-yovalim: #4673bd;*/
-/*    --green-yovalim: #38b54a;*/
-/*    --orange-yovalim: #f15a22;*/
-/*    --cyan-yovalim: #07acaf;*/
-/*    --purple-yovalim: #af53a0;*/
-/*}*/
-
-/* src/colors.css */
-
+/*:root {
+    --color-primary: #ffd206; !* Main accent color *!
+    --color-secondary: #faaa39; !* Secondary accent color *!
+    --color-dark: #5a5859; !* Dark color *!
+    --color-light: #b3d337; !* Light color *!
+    --color-highlight: #ed0a79; !* Highlight color *!
+    --color-info: #4673bd; !* Info color *!
+    --color-success: #38b54a; !* Success color *!
+    --color-warning: #f15a22; !* Warning color *!
+    --color-accent: #07acaf; !* Accent color *!
+    --color-muted: #af53a0; !* Muted color *!
+}*/
 :root {
     --color-primary: #ffd206; /* Main accent color */
     --color-secondary: #faaa39; /* Secondary accent color */

@@ -12,7 +12,11 @@ body {
 
 .events-container {
     width: 80%;
-    margin: 0 auto;
+    margin: auto auto;
+    padding: 20px;
+    background: white;
+    border-radius: 5px;
+    /*min-height: 90vh; !* Ensure it takes at least the full viewport height *!*/
 }
 
 .card-header {
