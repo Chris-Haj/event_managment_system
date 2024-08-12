@@ -1,5 +1,5 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { doc, getDoc } from 'firebase/firestore';
+import React, {useContext, useState, useEffect} from 'react';
+import {doc, getDoc} from 'firebase/firestore';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import db from '../DB/firebase';
 import AuthContext from '../context/AuthContext';
@@ -7,7 +7,7 @@ import './Profile.css';
 import defaultProfilePic from '../Images/DefaultProfilePic.png'; // Ensure this is the correct path to your default profile picture
 
 const Profile = () => {
-    const { currentUser } = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [birthDate, setBirthDate] = useState('');
@@ -50,7 +50,7 @@ const Profile = () => {
                         const eventDocRef = doc(db, 'events', eventId);
                         const eventSnap = await getDoc(eventDocRef);
                         if (eventSnap.exists()) {
-                            eventsList.push({ id: eventId, ...eventSnap.data() });
+                            eventsList.push({id: eventId, ...eventSnap.data()});
                         }
                     }
                     setRegisteredEvents(eventsList);
@@ -69,18 +69,21 @@ const Profile = () => {
         <div className="profile-page-container">
             {/* Profile Section */}
             <div className="profile-container">
-                <div className="profile-details">
-                    <div className="profile-pic-container">
-                        <img src={profilePic} alt="Profile" className="profile-pic" />
-                    </div>
+                <div className="profile-pic-container">
+                    <img src={profilePic} alt="Profile" className="profile-pic"/>
+                </div>
+                <div className="profile-info-container">
                     <div className="profile-info">
+                        <h4 className="user-header"><strong>My Profile:</strong></h4>
                         <h3>{firstName} {lastName}</h3>
-                        <p><strong>Email:</strong> {email}</p>
                         <p><strong>Age:</strong> {age}</p>
+                        <p><strong>Email:</strong> {email}</p>
                         <p><strong>Phone Number:</strong> {phoneNumber}</p>
                         <button className="edit-profile-btn">Edit Profile</button>
                     </div>
+
                 </div>
+
             </div>
 
             {/* Registered Events Section */}
