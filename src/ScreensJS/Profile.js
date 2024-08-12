@@ -1,13 +1,14 @@
-import React, {useContext, useState, useEffect} from 'react';
-import {doc, getDoc} from 'firebase/firestore';
+import React, { useContext, useState, useEffect } from 'react';
+import { doc, getDoc } from 'firebase/firestore';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import db from '../DB/firebase';
 import AuthContext from '../context/AuthContext';
 import './Profile.css';
-import defaultProfilePic from '../Images/DefaultProfilePic.png'; // Ensure this is the correct path to your default profile picture
+import camIcon from '../Images/camIcon.png'; // Camera icon
+import defaultProfilePic from '../Images/DefaultProfilePic.png'; // Default profile picture
 
 const Profile = () => {
-    const {currentUser} = useContext(AuthContext);
+    const { currentUser } = useContext(AuthContext);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [birthDate, setBirthDate] = useState('');
@@ -50,7 +51,7 @@ const Profile = () => {
                         const eventDocRef = doc(db, 'events', eventId);
                         const eventSnap = await getDoc(eventDocRef);
                         if (eventSnap.exists()) {
-                            eventsList.push({id: eventId, ...eventSnap.data()});
+                            eventsList.push({ id: eventId, ...eventSnap.data() });
                         }
                     }
                     setRegisteredEvents(eventsList);
@@ -72,6 +73,10 @@ const Profile = () => {
                 <div className="profile-pic-container">
                     <img src={profilePic} alt="Profile" className="profile-pic"/>
                 </div>
+                <button className="cam-icon-btn">
+                    <img src={camIcon} alt="Change Profile Picture"/>
+                </button>
+
                 <div className="profile-info-container">
                     <div className="profile-info">
                         <h4 className="user-header"><strong>My Profile:</strong></h4>
@@ -81,31 +86,32 @@ const Profile = () => {
                         <p><strong>Phone Number:</strong> {phoneNumber}</p>
                         <button className="edit-profile-btn">Edit Profile</button>
                     </div>
+                </div>
 
+                <div className="registered-container">
+                    <h4>Registered Events</h4>
+                    {registeredEvents.length > 0 ? (
+                        <ul className="events-list">
+                            {registeredEvents.slice(0, isExpanded ? registeredEvents.length : 3).map(event => (
+                                <li key={event.id} className="registered-item">
+                                    <strong>{event.name}</strong> - {event.date}
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p>No registered events yet.</p>
+                    )}
+                    {registeredEvents.length > 3 && (
+                        <button onClick={toggleExpand} className="expand-btn">
+                            {isExpanded ? 'Show Less' : 'View More'}
+                        </button>
+                    )}
                 </div>
 
             </div>
 
             {/* Registered Events Section */}
-            <div className="events-container">
-                <h4>Registered Events</h4>
-                {registeredEvents.length > 0 ? (
-                    <ul className="events-list">
-                        {registeredEvents.slice(0, isExpanded ? registeredEvents.length : 3).map(event => (
-                            <li key={event.id} className="event-item">
-                                <strong>{event.name}</strong> - {event.date}
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No registered events yet.</p>
-                )}
-                {registeredEvents.length > 3 && (
-                    <button onClick={toggleExpand} className="expand-btn">
-                        {isExpanded ? 'Show Less' : 'View More'}
-                    </button>
-                )}
-            </div>
+
         </div>
     );
 };
