@@ -1,11 +1,12 @@
+/* Profile Page Container */
 .profile-page-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
-
 }
 
-.profile-container  {
+/* Profile Container */
+.profile-container {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -38,12 +39,12 @@
 
 .cam-icon-btn {
     position: relative;
-    transform:translate(-50px, -30%);
+    transform: translate(-50px, -30%);
     border-radius: 50%;
     cursor: pointer;
     padding: 5px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    background: rgba(0,0,0,0.3);
+    background: rgba(0, 0, 0, 0.3);
 }
 
 .cam-icon-btn img {
@@ -51,8 +52,9 @@
     height: 24px;
 }
 
-.profile-info-container, .registered-container{
-    width:100%;
+.profile-info-container,
+.registered-container {
+    width: 100%;
     padding: 20px;
     border-radius: 10px;
     text-align: left;
@@ -109,9 +111,21 @@
 }
 
 .registered-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 10px;
     border-bottom: 1px solid #ddd;
     font-size: 1rem;
+}
+
+.registered-item-content {
+    flex-grow: 1; /* Take up the remaining space */
+}
+
+.registered-item-buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons */
 }
 
 .expand-btn {

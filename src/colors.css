@@ -11,7 +11,7 @@
     --color-muted: #af53a0; !* Muted color *!
 }*/
 :root {
-    --color-primary: rgba(255, 210, 6, 0); /* Main accent color */
+    --color-primary: #ffd206; /* Main accent color */
     --color-secondary: #faaa39; /* Secondary accent color */
     --color-dark: #5a5859; /* Dark color */
     --color-light: #b3d337; /* Light color */
