@@ -6,12 +6,12 @@ import defaultLogo from '../Images/YovalimLogo.png';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import AuthContext from '../context/AuthContext';
 import EventInfoModal from '../components/EventInfoModal';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
 import moment from 'moment';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 
-const localizer = momentLocalizer(moment); // Use moment.js as the localizer
+const localizer = momentLocalizer(moment);
 
 const Events = () => {
     const { currentUser } = useContext(AuthContext);
@@ -23,7 +23,7 @@ const Events = () => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [infoModalOpen, setInfoModalOpen] = useState(false);
     const [filterOpen, setFilterOpen] = useState(false);
-    const [isCalendarView, setIsCalendarView] = useState(false); // State to control view mode
+    const [isCalendarView, setIsCalendarView] = useState(false);
     const [filter, setFilter] = useState({
         startDate: '',
         endDate: '',
@@ -36,8 +36,8 @@ const Events = () => {
             const eventsList = querySnapshot.docs.map(doc => ({
                 id: doc.id,
                 ...doc.data(),
-                start: new Date(doc.data().date + ' ' + doc.data().timeStart), // Create start date object
-                end: new Date(doc.data().date + ' ' + doc.data().timeEnd) // Create end date object
+                start: new Date(doc.data().date + ' ' + doc.data().timeStart),
+                end: new Date(doc.data().date + ' ' + doc.data().timeEnd)
             }));
             setEvents(eventsList);
             setFilteredEvents(eventsList);
@@ -50,7 +50,7 @@ const Events = () => {
     const toggleModal = () => setModal(!modal);
     const toggleInfoModal = () => setInfoModalOpen(!infoModalOpen);
     const toggleFilter = () => setFilterOpen(!filterOpen);
-    const toggleViewMode = () => setIsCalendarView(!isCalendarView); // Toggle between calendar and list view
+    const toggleViewMode = () => setIsCalendarView(!isCalendarView);
 
     const handleJoinEvent = async (id) => {
         if (!currentUser) {
@@ -145,10 +145,10 @@ const Events = () => {
         <div className="events-container">
             <h1 className="Header">Current Events</h1>
             <div className="d-flex justify-content-between mb-3">
-                <button className="btn btn-primary" onClick={toggleViewMode}>
+                <button className="btn btn-primary view-toggle-btn" onClick={toggleViewMode}>
                     {isCalendarView ? 'View List' : 'View Calendar'}
                 </button>
-                <button className="btn btn-secondary" onClick={toggleFilter}>
+                <button className="btn btn-secondary filter-toggle-btn" onClick={toggleFilter}>
                     {filterOpen ? 'Hide Filters' : 'Show Filters'}
                 </button>
             </div>
@@ -186,7 +186,7 @@ const Events = () => {
                             onChange={handleFilterChange}
                         />
                     </div>
-                    <button className="btn btn-primary" onClick={applyFilters}>
+                    <button className="btn btn-primary apply-filters-btn" onClick={applyFilters}>
                         Apply Filters
                     </button>
                 </div>
@@ -199,6 +199,8 @@ const Events = () => {
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: 500 }}
+                    className="event-calendar"
+                    views={['month']} // Only show the month view
                 />
             ) : (
                 <div className="row">

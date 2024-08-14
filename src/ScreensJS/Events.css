@@ -11,12 +11,11 @@ body {
 }
 
 .events-container {
-    width: 80%;
+    width: 95%;
     margin: auto auto;
     padding: 20px;
     background: white;
     border-radius: 5px;
-    /*min-height: 90vh; !* Ensure it takes at least the full viewport height *!*/
 }
 
 .card-header {
@@ -77,24 +76,82 @@ body {
     transform: translateY(-5px);
 }
 
-.event-details {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 10px;
-    border-top: 1px solid #ddd;
-    transition: max-height 0.3s ease, opacity 0.3s ease; /* Animate max height and opacity */
-}
-
-.eventDetailsHide {
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-}
-
-.eventDetailsShow {
-    max-height: 200px; /* Adjust this value based on your content */
-    opacity: 1;
-}
-
 .modal-header, .modal-body, .modal-footer {
     text-align: center;
+}
+
+/* Calendar View Adjustments */
+.events-container {
+    width: 95%; /* Increased width to 95% */
+    margin: auto auto;
+    padding: 20px;
+    background: white;
+    border-radius: 5px;
+}
+
+
+.rbc-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.rbc-toolbar .rbc-toolbar-label {
+    font-size: 1.2rem;
+}
+
+.rbc-toolbar button {
+    padding: 5px 10px;
+    font-size: 0.9rem;
+}
+
+.rbc-event {
+    background-color: #f04e45;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 0.8rem;
+    color: white;
+    text-align: center;
+}
+
+.rbc-day-bg {
+    padding: 5px;
+}
+
+.rbc-date-cell {
+    padding: 5px;
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .rbc-calendar {
+        padding: 5px;
+    }
+
+    .rbc-toolbar {
+        flex-direction: column;
+        align-items: center;
+        padding: 5px;
+    }
+
+    .rbc-toolbar .rbc-toolbar-label {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+
+    .rbc-toolbar button {
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+    }
+
+    .rbc-event {
+        font-size: 0.7rem;
+        padding: 3px;
+    }
+
+    .rbc-date-cell {
+        font-size: 0.7rem;
+    }
 }
