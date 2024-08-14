@@ -1,48 +1,48 @@
 import { gapi } from 'gapi-script';
 
-const clientId = process.env.REACT_APP_GOOGLE_CALENDER_CLIENT_ID;
+const CLIENT_ID = process.env.REACT_APP_GOOGLE_CALENDER_CLIENT_ID;
+const API_KEY = process.env.REACT_APP_GOOGLE_CALENDER_API_KEY;
 
-export const initGoogleClient = () => {
+export const initGoogleCalendarClient = () => {
     gapi.load('client:auth2', () => {
         gapi.client.init({
-            clientId: clientId,
-            scope: 'https://www.googleapis.com/auth/calendar.events',
+            apiKey: API_KEY,
+            clientId: CLIENT_ID,
+            discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
+            scope: "https://www.googleapis.com/auth/calendar.events",
         });
     });
 };
 
-export const loginWithGoogle = () => {
-    return new Promise((resolve, reject) => {
-        gapi.auth2.getAuthInstance().signIn().then(
-            (response) => {
-                gapi.client.setToken({ access_token: response.getAuthResponse().access_token });
-                resolve(response);
-            },
-            (error) => reject(error)
-        );
-    });
-};
+export const addEventToGoogleCalendar = (event) => {
+    const eventDetails = {
+        'summary': event.name,
+        'description': event.description,
+        'start': {
+            'dateTime': `${event.date}T${event.timeStart}:00`,
+            'timeZone': 'Asia/Jerusalem',  // Set the timezone to Israel
+        },
+        'end': {
+            'dateTime': `${event.date}T${event.timeEnd}:00`,
+            'timeZone': 'Asia/Jerusalem',  // Set the timezone to Israel
+        },
+        'reminders': {
+            'useDefault': false,
+            'overrides': [
+                { 'method': 'email', 'minutes': 24 * 60 },
+                { 'method': 'popup', 'minutes': 10 },
+            ],
+        },
+    };
 
-export const addEventToGoogleCalendar = async (event) => {
-    try {
-        const response = await gapi.client.calendar.events.insert({
-            calendarId: 'primary',
-            resource: {
-                summary: event.name,
-                location: `${event.location.mainArea}, ${event.location.specificPlace}`,
-                description: event.description,
-                start: {
-                    dateTime: `${event.date}T${event.timeStart}:00`,
-                    timeZone: 'America/Los_Angeles',
-                },
-                end: {
-                    dateTime: `${event.date}T${event.timeEnd}:00`,
-                    timeZone: 'America/Los_Angeles',
-                },
-            },
+    gapi.auth2.getAuthInstance().signIn().then(() => {
+        const request = gapi.client.calendar.events.insert({
+            'calendarId': 'primary',
+            'resource': eventDetails,
         });
-        console.log('Event added to Google Calendar: ', response);
-    } catch (error) {
-        console.error('Error adding event to Google Calendar: ', error);
-    }
+
+        request.execute((event) => {
+            console.log('Event created: ', event.htmlLink);
+        });
+    });
 };

@@ -1,55 +1,56 @@
-import React, {useEffect, useState, useContext} from 'react';
-import {getDocs, collection, updateDoc, doc, arrayUnion, getDoc} from 'firebase/firestore';
+import React, { useEffect, useState, useContext } from 'react';
+import { getDocs, collection, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
-import {Modal, ModalHeader, ModalBody, ModalFooter, Button} from 'reactstrap';
-import AuthContext from '../context/AuthContext'; // Import the AuthContext
-import EventInfoModal from '../components/EventInfoModal'; // Import the EventInfoModal component
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
+import AuthContext from '../context/AuthContext';
+import EventInfoModal from '../components/EventInfoModal';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
+import moment from 'moment';
 
-import {gapi} from 'gapi-script'; // Import gapi for Google API
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+
+const localizer = momentLocalizer(moment); // Use moment.js as the localizer
 
 const Events = () => {
-    const {currentUser} = useContext(AuthContext); // Get the current user from the AuthContext
+    const { currentUser } = useContext(AuthContext);
     const [events, setEvents] = useState([]);
-    const [visibleDetails, setVisibleDetails] = useState({});
+    const [filteredEvents, setFilteredEvents] = useState([]);
     const [modal, setModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
-    const [loading, setLoading] = useState(true); // Add loading state
-    const [selectedEvent, setSelectedEvent] = useState(null); // Store selected event for EventInfoModal
-    const [infoModalOpen, setInfoModalOpen] = useState(false); // State to control EventInfoModal
-
-    const CLIENT_ID = process.env.REACT_APP_GOOGLE_CALENDER_CLIENT_ID;
-    const API_KEY = process.env.REACT_APP_GOOGLE_CALENDER_API_KEY;
+    const [loading, setLoading] = useState(true);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [infoModalOpen, setInfoModalOpen] = useState(false);
+    const [filterOpen, setFilterOpen] = useState(false);
+    const [isCalendarView, setIsCalendarView] = useState(false); // State to control view mode
+    const [filter, setFilter] = useState({
+        startDate: '',
+        endDate: '',
+        location: '',
+    });
 
     useEffect(() => {
         const fetchEvents = async () => {
             const querySnapshot = await getDocs(collection(db, 'events'));
             const eventsList = querySnapshot.docs.map(doc => ({
                 id: doc.id,
-                ...doc.data()
+                ...doc.data(),
+                start: new Date(doc.data().date + ' ' + doc.data().timeStart), // Create start date object
+                end: new Date(doc.data().date + ' ' + doc.data().timeEnd) // Create end date object
             }));
             setEvents(eventsList);
-            setLoading(false); // Stop loading when events are fetched
+            setFilteredEvents(eventsList);
+            setLoading(false);
         };
 
         fetchEvents();
-
-        // Load the Google API client
-        const initClient = () => {
-            gapi.client.init({
-                apiKey: API_KEY,
-                clientId: CLIENT_ID,
-                discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest"],
-                scope: "https://www.googleapis.com/auth/calendar.events"
-            });
-        };
-        gapi.load('client:auth2', initClient);
-    }, [API_KEY, CLIENT_ID]);
+    }, []);
 
     const toggleModal = () => setModal(!modal);
-
     const toggleInfoModal = () => setInfoModalOpen(!infoModalOpen);
+    const toggleFilter = () => setFilterOpen(!filterOpen);
+    const toggleViewMode = () => setIsCalendarView(!isCalendarView); // Toggle between calendar and list view
 
     const handleJoinEvent = async (id) => {
         if (!currentUser) {
@@ -61,7 +62,7 @@ const Events = () => {
         try {
             const userId = currentUser.uid;
             const eventDoc = doc(db, 'events', id);
-            const userDoc = doc(db, 'users', userId); // Reference to the user's document
+            const userDoc = doc(db, 'users', userId);
             const eventSnap = await getDoc(eventDoc);
 
             if (eventSnap.exists()) {
@@ -73,18 +74,13 @@ const Events = () => {
                 }
             }
 
-            // Update the event document: Add the user ID to the registrants array
             await updateDoc(eventDoc, {
                 registrants: arrayUnion(userId)
             });
 
-            // Update the user document: Add the event ID to the registeredEvents array
             await updateDoc(userDoc, {
                 registeredEvents: arrayUnion(id)
             });
-
-            // Add event to Google Calendar (if applicable)
-            // addEventToGoogleCalendar(eventSnap.data());
 
             setModalMessage('Successfully registered for the event!');
             toggleModal();
@@ -103,102 +99,149 @@ const Events = () => {
     };
 
     const handleInfoClick = (event) => {
-        const formattedEvent = {...event, date: formatDate(event.date)};
+        const formattedEvent = { ...event, date: formatDate(event.date) };
         setSelectedEvent(formattedEvent);
         toggleInfoModal();
     };
 
-    const addEventToGoogleCalendar = (event) => {
-        const eventDetails = {
-            'summary': event.name,
-            'description': event.description,
-            'start': {
-                'dateTime': `${event.date}T${event.timeStart}:00`,
-                'timeZone': 'America/Los_Angeles'
-            },
-            'end': {
-                'dateTime': `${event.date}T${event.timeEnd}:00`,
-                'timeZone': 'America/Los_Angeles'
-            },
-            'reminders': {
-                'useDefault': false,
-                'overrides': [
-                    {'method': 'email', 'minutes': 24 * 60},
-                    {'method': 'popup', 'minutes': 10}
-                ]
-            }
-        };
-
-        gapi.auth2.getAuthInstance().signIn().then(() => {
-            const request = gapi.client.calendar.events.insert({
-                'calendarId': 'primary',
-                'resource': eventDetails
-            });
-
-            request.execute((event) => {
-                console.log('Event created: ', event.htmlLink);
-            });
-        });
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilter({ ...filter, [name]: value });
     };
 
+    const applyFilters = () => {
+        let filtered = events;
+
+        if (filter.startDate) {
+            filtered = filtered.filter(event => new Date(event.date) >= new Date(filter.startDate));
+        }
+
+        if (filter.endDate) {
+            filtered = filtered.filter(event => new Date(event.date) <= new Date(filter.endDate));
+        }
+
+        if (filter.location) {
+            filtered = filtered.filter(event =>
+                event.location.mainArea.toLowerCase().includes(filter.location.toLowerCase()) ||
+                event.location.specificPlace.toLowerCase().includes(filter.location.toLowerCase())
+            );
+        }
+
+        setFilteredEvents(filtered);
+    };
+
+    const calendarEvents = filteredEvents.map(event => ({
+        title: event.name,
+        start: new Date(event.date + 'T' + event.timeStart),
+        end: new Date(event.date + 'T' + event.timeEnd),
+        id: event.id,
+    }));
+
     if (loading) {
-        return <div className="loading">Loading events...</div>; // Show loading spinner or message
+        return <div className="loading">Loading events...</div>;
     }
 
     return (
         <div className="events-container">
             <h1 className="Header">Current Events</h1>
-            <div className="row">
-                {events.map(event => (
-                    <div key={event.id} className="col-md-4 mb-4">
-                        <div className="card h-100 event-card">
-                            <div className="card-header d-flex justify-content-between">
-                                <h5 className="card-title">{event.name}</h5>
-                                <div>
-                                    <p className="card-text eventDate"><strong>{new Date(event.date).toLocaleDateString('en-GB')}</strong></p>
-                                    <p className="card-text eventDate"><strong>{event.timeStart}-{event.timeEnd}</strong></p>
+            <div className="d-flex justify-content-between mb-3">
+                <button className="btn btn-primary" onClick={toggleViewMode}>
+                    {isCalendarView ? 'View List' : 'View Calendar'}
+                </button>
+                <button className="btn btn-secondary" onClick={toggleFilter}>
+                    {filterOpen ? 'Hide Filters' : 'Show Filters'}
+                </button>
+            </div>
+
+            {filterOpen && (
+                <div className="filter-container">
+                    <div className="filter-group">
+                        <label htmlFor="startDate">Start Date:</label>
+                        <input
+                            type="date"
+                            id="startDate"
+                            name="startDate"
+                            value={filter.startDate}
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label htmlFor="endDate">End Date:</label>
+                        <input
+                            type="date"
+                            id="endDate"
+                            name="endDate"
+                            value={filter.endDate}
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                    <div className="filter-group">
+                        <label htmlFor="location">Location:</label>
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            placeholder="Enter location"
+                            value={filter.location}
+                            onChange={handleFilterChange}
+                        />
+                    </div>
+                    <button className="btn btn-primary" onClick={applyFilters}>
+                        Apply Filters
+                    </button>
+                </div>
+            )}
+
+            {isCalendarView ? (
+                <Calendar
+                    localizer={localizer}
+                    events={calendarEvents}
+                    startAccessor="start"
+                    endAccessor="end"
+                    style={{ height: 500 }}
+                />
+            ) : (
+                <div className="row">
+                    {filteredEvents.map(event => (
+                        <div key={event.id} className="col-md-4 mb-4">
+                            <div className="card h-100 event-card">
+                                <div className="card-header d-flex justify-content-between">
+                                    <h5 className="card-title">{event.name}</h5>
+                                    <div>
+                                        <p className="card-text eventDate"><strong>{new Date(event.date).toLocaleDateString('en-GB')}</strong></p>
+                                        <p className="card-text eventDate"><strong>{event.timeStart}-{event.timeEnd}</strong></p>
+                                    </div>
+                                </div>
+                                <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event" />
+                                <div className="button-container">
+                                    <button
+                                        className="btn btn-info info-button"
+                                        onClick={() => handleInfoClick(event)}
+                                    >
+                                        Info
+                                    </button>
+                                    <button
+                                        className="btn btn-success join-button"
+                                        onClick={() => handleJoinEvent(event.id)}
+                                    >
+                                        Join
+                                    </button>
                                 </div>
                             </div>
-                            <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event"/>
-                            <div className="button-container">
-                                <button
-                                    className="btn btn-info info-button"
-                                    onClick={() => handleInfoClick(event)}
-                                >
-                                    Info
-                                </button>
-                                <button
-                                    className="btn btn-success join-button"
-                                    onClick={() => handleJoinEvent(event.id)}
-                                >
-                                    Join
-                                </button>
-                            </div>
-                            <div className={`card-footer event-details ${visibleDetails[event.id] ? 'eventDetailsShow' : 'eventDetailsHide'}`}>
-                                <p><strong>Description:</strong> {event.description}</p>
-                                <p><strong>Location:</strong> {event.location.mainArea}, {event.location.specificPlace}</p>
-                                <p><strong>Recommended Age:</strong> {event.characteristics.recommendedAge.join(', ')}</p>
-                                <p><strong>Dress Code:</strong> {event.characteristics.dressCode}</p>
-                                {event.registrantLimit && (
-                                    <p><strong>Registrant Cap:</strong> {event.registrantLimit}</p>
-                                )}
-                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
-            {/* Modal for Event Registration Confirmation */}
+                    ))}
+                </div>
+            )}
+
             <Modal isOpen={modal} toggle={toggleModal}>
                 <ModalHeader toggle={toggleModal}>Event Registration</ModalHeader>
-                <ModalBody>
-                    {modalMessage}
-                </ModalBody>
+                <ModalBody>{modalMessage}</ModalBody>
                 <ModalFooter>
                     <Button color="secondary" onClick={toggleModal}>Close</Button>
                 </ModalFooter>
             </Modal>
-            {/* Modal for Event Info */}
-            <EventInfoModal isOpen={infoModalOpen} toggle={toggleInfoModal} event={selectedEvent}/>
+
+            <EventInfoModal isOpen={infoModalOpen} toggle={toggleInfoModal} event={selectedEvent} />
         </div>
     );
 };

@@ -98,3 +98,96 @@ body {
 .modal-header, .modal-body, .modal-footer {
     text-align: center;
 }
+
+/* Calendar container adjustments */
+.rbc-calendar {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    background-color: white;
+}
+
+/* Calendar header adjustments */
+.rbc-toolbar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+}
+
+.rbc-toolbar .rbc-toolbar-label {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.rbc-toolbar button {
+    padding: 5px 10px;
+    margin: 0 5px;
+    font-size: 0.9rem;
+}
+
+.rbc-btn-group {
+    margin-bottom: 10px;
+}
+
+/* Calendar navigation adjustments */
+.rbc-btn-group button {
+    padding: 5px;
+    font-size: 0.8rem;
+}
+
+/* Event cell adjustments */
+.rbc-event {
+    background-color: #f04e45;
+    border: none;
+    border-radius: 5px;
+    padding: 5px;
+    font-size: 0.8rem;
+}
+
+.rbc-event-content {
+    color: white;
+    text-align: center;
+}
+
+/* Day cell adjustments */
+.rbc-day-bg {
+    padding: 5px;
+}
+
+.rbc-date-cell {
+    padding: 5px;
+    font-size: 0.8rem;
+}
+
+/* Adjustments for small screens */
+@media (max-width: 768px) {
+    .rbc-calendar {
+        padding: 5px;
+    }
+
+    .rbc-toolbar {
+        flex-direction: column;
+        padding: 5px;
+    }
+
+    .rbc-toolbar .rbc-toolbar-label {
+        font-size: 1rem;
+        margin-bottom: 5px;
+    }
+
+    .rbc-toolbar button {
+        font-size: 0.8rem;
+    }
+
+    .rbc-event {
+        font-size: 0.7rem;
+        padding: 3px;
+    }
+
+    .rbc-date-cell {
+        font-size: 0.7rem;
+    }
+}

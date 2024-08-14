@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { getFirestore, collection, addDoc } from 'firebase/firestore';
-import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import React, {useState} from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import {getFirestore, collection, addDoc, doc, getDoc, updateDoc} from 'firebase/firestore';
+import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import db from '../DB/firebase';
 import ViewEvents from './ViewEvents'; // Import the ViewEvents component
-import { Nav, NavItem, NavLink, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, Button, Spinner } from 'reactstrap';
+import {Nav, NavItem, NavLink, TabContent, TabPane, Modal, ModalHeader, ModalBody, ModalFooter, Button, Spinner} from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './ManageBase.css';
 
@@ -19,10 +20,16 @@ const ManageBase = () => {
     const [recommendedAge, setRecommendedAge] = useState([]);
     const [dressCode, setDressCode] = useState('');
     const [image, setImage] = useState(null);
+    const [imageUrl, setImageUrl] = useState(''); // Store the existing image URL
     const [registrantLimit, setRegistrantLimit] = useState('');
     const [modal, setModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isEditMode, setIsEditMode] = useState(false); // Track if we're in edit mode
+    const [currentEventId, setCurrentEventId] = useState(null); // Track the ID of the event being edited
+
+    const navigate = useNavigate(); // Initialize navigate
+
 
     const toggle = tab => {
         if (activeTab !== tab) setActiveTab(tab);
@@ -31,7 +38,7 @@ const ManageBase = () => {
     const toggleModal = () => setModal(!modal);
 
     const handleCheckboxChange = (e) => {
-        const { value, checked } = e.target;
+        const {value, checked} = e.target;
         setRecommendedAge(prev =>
             checked ? [...prev, value] : prev.filter(age => age !== value)
         );
@@ -49,58 +56,112 @@ const ManageBase = () => {
         setIsLoading(true); // Show loading spinner
 
         try {
-            let imageUrl = '';
+            let finalImageUrl = imageUrl; // Use the existing image URL by default
+
             if (image) {
                 const storage = getStorage();
                 const storageRef = ref(storage, `event_images/${image.name}`);
                 await uploadBytes(storageRef, image);
-                imageUrl = await getDownloadURL(storageRef);
+                finalImageUrl = await getDownloadURL(storageRef);
             }
 
-            const docRef = await addDoc(collection(db, 'events'), {
-                name,
-                description,
-                date,
-                timeStart,
-                timeEnd,
-                location: {
-                    mainArea,
-                    specificPlace
-                },
-                characteristics: {
-                    recommendedAge,
-                    dressCode
-                },
-                imageUrl: imageUrl || '', // Save imageUrl if available
-                registrantLimit: registrantLimit || null // Save registrantLimit if available
-            });
+            if (isEditMode && currentEventId) {
+                // Update existing event
+                const eventDocRef = doc(db, 'events', currentEventId);
+                await updateDoc(eventDocRef, {
+                    name,
+                    description,
+                    date,
+                    timeStart,
+                    timeEnd,
+                    location: {
+                        mainArea,
+                        specificPlace
+                    },
+                    characteristics: {
+                        recommendedAge,
+                        dressCode
+                    },
+                    imageUrl: finalImageUrl,
+                    registrantLimit: registrantLimit || null
+                });
+                setModalMessage("Event successfully updated!");
+            } else {
+                // Add new event
+                await addDoc(collection(db, 'events'), {
+                    name,
+                    description,
+                    date,
+                    timeStart,
+                    timeEnd,
+                    location: {
+                        mainArea,
+                        specificPlace
+                    },
+                    characteristics: {
+                        recommendedAge,
+                        dressCode
+                    },
+                    imageUrl: finalImageUrl || '', // Save imageUrl if available
+                    registrantLimit: registrantLimit || null // Save registrantLimit if available
+                });
+                setModalMessage("Event successfully created!");
+            }
 
-            setModalMessage("Event successfully created!");
             setIsLoading(false); // Hide loading spinner
             setModal(true); // Keep modal open
 
             // Reset form
-            setName('');
-            setDescription('');
-            setDate('');
-            setTimeStart('');
-            setTimeEnd('');
-            setMainArea('');
-            setSpecificPlace('');
-            setRecommendedAge([]);
-            setDressCode('');
-            setImage(null);
-            setRegistrantLimit('');
+            resetForm();
         } catch (e) {
-            setModalMessage(`Error creating event: ${e.message}`);
+            setModalMessage(`Error submitting event: ${e.message}`);
             setIsLoading(false); // Hide loading spinner
             setModal(true); // Keep modal open
         }
     };
 
-    const handleEdit = (id) => {
-        console.log('Edit event with ID:', id);
-        // Implement the logic to edit the event
+    const resetForm = () => {
+        setName('');
+        setDescription('');
+        setDate('');
+        setTimeStart('');
+        setTimeEnd('');
+        setMainArea('');
+        setSpecificPlace('');
+        setRecommendedAge([]);
+        setDressCode('');
+        setImage(null);
+        setImageUrl(''); // Clear existing image URL
+        setRegistrantLimit('');
+        setIsEditMode(false); // Reset edit mode
+        setCurrentEventId(null); // Clear current event ID
+        setActiveTab('1'); // Switch back to Manage Events tab
+    };
+
+    const handleEdit = async (id) => {
+        try {
+            const eventDocRef = doc(db, 'events', id);
+            const eventSnap = await getDoc(eventDocRef);
+            if (eventSnap.exists()) {
+                const eventData = eventSnap.data();
+                setName(eventData.name);
+                setDescription(eventData.description);
+                setDate(eventData.date);
+                setTimeStart(eventData.timeStart);
+                setTimeEnd(eventData.timeEnd);
+                setMainArea(eventData.location.mainArea);
+                setSpecificPlace(eventData.location.specificPlace);
+                setRecommendedAge(eventData.characteristics.recommendedAge);
+                setDressCode(eventData.characteristics.dressCode);
+                setImageUrl(eventData.imageUrl || ''); // Set existing image URL
+                setRegistrantLimit(eventData.registrantLimit || '');
+                setIsEditMode(true); // Enable edit mode
+                setCurrentEventId(id); // Set the ID of the event being edited
+                setActiveTab('2'); // Switch to the Add/Edit Event tab
+            }
+        } catch (error) {
+            console.error("Error fetching event data for editing: ", error);
+        }
     };
 
     const handleDelete = (id) => {
@@ -109,8 +170,7 @@ const ManageBase = () => {
     };
 
     const handleViewRegistrants = (id) => {
-        console.log('View registrants for event with ID:', id);
-        // Implement the logic to view the registrants
+        navigate(`/view-registrants/${id}`);
     };
 
     return (
@@ -129,16 +189,16 @@ const ManageBase = () => {
                         className={activeTab === '2' ? 'active' : ''}
                         onClick={() => toggle('2')}
                     >
-                        Add Event
+                        {isEditMode ? 'Edit Event' : 'Add Event'}
                     </NavLink>
                 </NavItem>
             </Nav>
             <TabContent activeTab={activeTab}>
                 <TabPane tabId="1">
-                    <ViewEvents onEdit={handleEdit} onDelete={handleDelete} onViewRegistrants={handleViewRegistrants} />
+                    <ViewEvents onEdit={handleEdit} onDelete={handleDelete} onViewRegistrants={handleViewRegistrants}/>
                 </TabPane>
                 <TabPane tabId="2">
-                    <h1>Add Event</h1>
+                    <h1>{isEditMode ? 'Edit Event' : 'Add Event'}</h1>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-3">
                             <label htmlFor="eventName" className="form-label">Event Name</label>
@@ -274,6 +334,12 @@ const ManageBase = () => {
                                 accept="image/*"
                                 onChange={handleImageChange}
                             />
+                            {isEditMode && imageUrl && (
+                                <div className="mt-2">
+                                    <p>Current Image:</p>
+                                    <img src={imageUrl} alt="Current Event" style={{maxWidth: '100%'}}/>
+                                </div>
+                            )}
                         </div>
                         <div className="mb-3">
                             <label htmlFor="registrantLimit" className="form-label">Registrant Limit (Optional)</label>
@@ -286,7 +352,14 @@ const ManageBase = () => {
                                 min="0"
                             />
                         </div>
-                        <button type="submit" className="btn btn-primary">Add Event</button>
+                        {isEditMode ? (
+                            <>
+                                <button type="submit" className="btn btn-primary">Save Changes</button>
+                                <button type="button" className="btn btn-secondary" onClick={resetForm}>Cancel</button>
+                            </>
+                        ) : (
+                            <button type="submit" className="btn btn-primary">Add Event</button>
+                        )}
                     </form>
                 </TabPane>
             </TabContent>
@@ -295,7 +368,7 @@ const ManageBase = () => {
                 <ModalBody>
                     {isLoading ? (
                         <div className="text-center">
-                            <Spinner color="primary" />
+                            <Spinner color="primary"/>
                             <p>Submitting your event...</p>
                         </div>
                     ) : (

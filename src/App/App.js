@@ -7,6 +7,8 @@ import AuthContext from '../context/AuthContext';
 import FloatingBar from '../components/FloatingBar';
 import SideBar from '../components/SideBar';
 import Profile from '../ScreensJS/Profile';
+import ViewRegistrants from '../components/ViewRegistrants'; // Import the ViewRegistrants component
+
 
 
 function App() {
@@ -26,6 +28,7 @@ function App() {
                 <Route path="/events" element={currentUser ? <EventsPage /> : <Navigate replace to="/" />} />
                 <Route path="/profile" element={currentUser ? <Profile /> : <Navigate replace to="/" />} />
                 <Route path="/manage-base" element={currentUser && currentUser.role === 'admin' ? <ManageBase /> : <Navigate replace to="/" />} />
+                <Route path="/view-registrants/:eventId" element={<ViewRegistrants />} />
             </Routes>
         </Router>
     );
