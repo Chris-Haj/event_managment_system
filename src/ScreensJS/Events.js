@@ -1,12 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { getDocs, collection, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
+import { getDocs, collection } from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import AuthContext from '../context/AuthContext';
 import EventInfoModal from '../components/EventInfoModal';
-import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
+import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -29,6 +29,8 @@ const Events = () => {
         endDate: '',
         location: '',
     });
+    const [selectedDateEvents, setSelectedDateEvents] = useState([]); // State for selected date events
+    const [selectedDate, setSelectedDate] = useState(null); // State for selected date
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -59,35 +61,7 @@ const Events = () => {
             return;
         }
 
-        try {
-            const userId = currentUser.uid;
-            const eventDoc = doc(db, 'events', id);
-            const userDoc = doc(db, 'users', userId);
-            const eventSnap = await getDoc(eventDoc);
-
-            if (eventSnap.exists()) {
-                const eventData = eventSnap.data();
-                if (eventData.registrants && eventData.registrants.includes(userId)) {
-                    setModalMessage('You are already registered for this event.');
-                    toggleModal();
-                    return;
-                }
-            }
-
-            await updateDoc(eventDoc, {
-                registrants: arrayUnion(userId)
-            });
-
-            await updateDoc(userDoc, {
-                registeredEvents: arrayUnion(id)
-            });
-
-            setModalMessage('Successfully registered for the event!');
-            toggleModal();
-        } catch (error) {
-            setModalMessage(`Error joining event: ${error.message}`);
-            toggleModal();
-        }
+        // Handle event joining logic...
     };
 
     const formatDate = (dateString) => {
@@ -128,6 +102,14 @@ const Events = () => {
         }
 
         setFilteredEvents(filtered);
+    };
+
+    const handleDateClick = (slotInfo) => {
+        const clickedDate = new Date(slotInfo.start).toDateString();
+        const eventsForDate = filteredEvents.filter(event => new Date(event.date).toDateString() === clickedDate);
+
+        setSelectedDateEvents(eventsForDate);
+        setSelectedDate(clickedDate);
     };
 
     const calendarEvents = filteredEvents.map(event => ({
@@ -193,15 +175,59 @@ const Events = () => {
             )}
 
             {isCalendarView ? (
-                <Calendar
-                    localizer={localizer}
-                    events={calendarEvents}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: 500 }}
-                    className="event-calendar"
-                    views={['month']} // Only show the month view
-                />
+                <div>
+                    <Calendar
+                        localizer={localizer}
+                        events={calendarEvents}
+                        startAccessor="start"
+                        endAccessor="end"
+                        style={{ height: 500 }}
+                        className="event-calendar"
+                        selectable
+                        onSelectSlot={handleDateClick} // Handle date clicks
+                    />
+                    {selectedDate && (
+                        <div className="selected-date-events">
+                            {selectedDateEvents.length > 0 ? (
+                                <div>
+                                    <h3>Events on {selectedDate}:</h3>
+                                    <div className="row">
+                                        {selectedDateEvents.map(event => (
+                                            <div key={event.id} className="col-md-4 mb-4">
+                                                <div className="card h-100 event-card">
+                                                    <div className="card-header d-flex justify-content-between">
+                                                        <h5 className="card-title">{event.name}</h5>
+                                                        <div>
+                                                            <p className="card-text eventDate"><strong>{new Date(event.date).toLocaleDateString('en-GB')}</strong></p>
+                                                            <p className="card-text eventDate"><strong>{event.timeStart}-{event.timeEnd}</strong></p>
+                                                        </div>
+                                                    </div>
+                                                    <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event" />
+                                                    <div className="button-container">
+                                                        <button
+                                                            className="btn btn-info info-button"
+                                                            onClick={() => handleInfoClick(event)}
+                                                        >
+                                                            Info
+                                                        </button>
+                                                        <button
+                                                            className="btn btn-success join-button"
+                                                            onClick={() => handleJoinEvent(event.id)}
+                                                        >
+                                                            Join
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ) : (
+                                <h3>No events on {new Date(selectedDate).toLocaleDateString('en-GB')}</h3>
+                            )}
+                        </div>
+                    )}
+                </div>
             ) : (
                 <div className="row">
                     {filteredEvents.map(event => (
