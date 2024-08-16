@@ -140,3 +140,70 @@
     cursor: pointer;
     text-align: center;
 }
+
+/* Modal styling for profile picture change */
+.profile-pic-preview-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.profile-pic-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-body{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.modal-footer{
+    display: flex;
+    justify-content: space-between;
+}
+
+.modal-footer .btn-primary {
+
+}
+
+.modal-footer .btn-secondary {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+.profile-pic-preview-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+.profile-pic-preview {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.modal-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: space-between;
+}
+
+/* Adjust modal size for better UX */
+.modal-dialog {
+    max-width: 400px;
+    margin: 30px auto;
+}
