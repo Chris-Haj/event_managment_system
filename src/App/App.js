@@ -10,7 +10,6 @@ import Profile from '../ScreensJS/Profile';
 import ViewRegistrants from '../components/ViewRegistrants'; // Import the ViewRegistrants component
 
 
-
 function App() {
     const { currentUser } = useContext(AuthContext);
     const [sidebarShow, setSidebarShow] = useState(false);

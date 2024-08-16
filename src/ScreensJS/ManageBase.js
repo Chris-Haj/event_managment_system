@@ -27,7 +27,6 @@ const ManageBase = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false); // Track if we're in edit mode
     const [currentEventId, setCurrentEventId] = useState(null); // Track the ID of the event being edited
-
     const navigate = useNavigate(); // Initialize navigate
 
 

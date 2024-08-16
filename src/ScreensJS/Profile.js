@@ -1,5 +1,6 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc, arrayRemove } from 'firebase/firestore';
+import React, {useContext, useState, useEffect} from 'react';
+import {doc, getDoc, updateDoc, arrayRemove} from 'firebase/firestore';
+import {getStorage, ref, deleteObject, uploadBytes, getDownloadURL} from 'firebase/storage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import db from '../DB/firebase';
 import AuthContext from '../context/AuthContext';
@@ -7,10 +8,10 @@ import './Profile.css';
 import camIcon from '../Images/camIcon.png'; // Camera icon
 import defaultProfilePic from '../Images/DefaultProfilePic.png'; // Default profile picture
 import EventInfoModal from '../components/EventInfoModal'; // Import the EventInfoModal component
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
+import {Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input} from 'reactstrap';
 
 const Profile = () => {
-    const { currentUser } = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext);
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
     const [birthDate, setBirthDate] = useState('');
@@ -24,6 +25,8 @@ const Profile = () => {
     const [infoModalOpen, setInfoModalOpen] = useState(false); // State to control EventInfoModal
     const [editProfileModal, setEditProfileModal] = useState(false); // State for edit profile modal
     const [profilePicModalOpen, setProfilePicModalOpen] = useState(false); // State for profile picture change modal
+    const [preview, setPreview] = useState(defaultProfilePic); // State for previewing new profile pic
+    const [newPicFile, setNewPicFile] = useState(null); // State for storing the new profile picture file
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -39,6 +42,7 @@ const Profile = () => {
                     setEmail(userData.email);
                     setPhoneNumber(userData.phoneNumber || 'Not added');
                     setProfilePic(userData.profilePic || defaultProfilePic);
+                    setPreview(userData.profilePic || defaultProfilePic);
 
                     // Calculate age
                     const birthDateObj = new Date(userData.birthDate);
@@ -57,7 +61,7 @@ const Profile = () => {
                         const eventDocRef = doc(db, 'events', eventId);
                         const eventSnap = await getDoc(eventDocRef);
                         if (eventSnap.exists()) {
-                            eventsList.push({ id: eventId, ...eventSnap.data() });
+                            eventsList.push({id: eventId, ...eventSnap.data()});
                         }
                     }
                     setRegisteredEvents(eventsList);
@@ -74,7 +78,11 @@ const Profile = () => {
 
     const toggleInfoModal = () => setInfoModalOpen(!infoModalOpen);
     const toggleEditProfileModal = () => setEditProfileModal(!editProfileModal);
-    const toggleProfilePicModal = () => setProfilePicModalOpen(!profilePicModalOpen);
+    const toggleProfilePicModal = () => {
+        setNewPicFile(null); // Clear selected file
+        setPreview(profilePic); // Reset the preview to the current profile picture
+        setProfilePicModalOpen(!profilePicModalOpen);
+    };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -85,7 +93,7 @@ const Profile = () => {
     };
 
     const handleInfoClick = (event) => {
-        const formattedEvent = { ...event, date: formatDate(event.date) };
+        const formattedEvent = {...event, date: formatDate(event.date)};
         setSelectedEvent(formattedEvent);
         toggleInfoModal();
     };
@@ -117,18 +125,44 @@ const Profile = () => {
         }
     };
 
-    const handleProfilePicChange = async (e) => {
+    const handleProfilePicChange = (e) => {
         if (e.target.files[0]) {
+            setNewPicFile(e.target.files[0]); // Store the new file
+            setPreview(URL.createObjectURL(e.target.files[0])); // Preview the new picture
+        }
+    };
+
+    const saveProfilePic = async () => {
+        if (newPicFile) {
             try {
                 const userDocRef = doc(db, 'users', currentUser.uid);
-                const file = URL.createObjectURL(e.target.files[0]);
-                setProfilePic(file); // Set the new profile picture preview
+                const storage = getStorage();
+                const fileRef = ref(storage, `profile_pictures/${currentUser.uid}_${newPicFile.name}`);
 
-                // Update in Firebase (add your upload logic here if needed)
+                // Check if the user has an existing profile picture
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    if (userData.profilePic) {
+                        // Delete the previous profile picture from Firebase Storage
+                        const oldProfilePicRef = ref(storage, userData.profilePic);
+                        await deleteObject(oldProfilePicRef);
+                    }
+                }
+
+                // Upload the new profile picture
+                await uploadBytes(fileRef, newPicFile);
+
+                // Get the new profile picture URL
+                const newProfilePicUrl = await getDownloadURL(fileRef);
+
+                // Update the user's profile picture in Firestore
                 await updateDoc(userDocRef, {
-                    profilePic: file
+                    profilePic: newProfilePicUrl
                 });
 
+                // Set the new profile picture
+                setProfilePic(newProfilePicUrl);
                 toggleProfilePicModal(); // Close the modal after updating
             } catch (error) {
                 console.error("Error updating profile picture: ", error);
@@ -162,7 +196,7 @@ const Profile = () => {
                     <img src={profilePic} alt="Profile" className="profile-pic"/>
                 </div>
                 <button className="cam-icon-btn" onClick={toggleProfilePicModal}>
-                    <img src={camIcon} alt="Change Profile Picture"/>
+                    <img src={camIcon} alt="Profile Pic Change"/>
                 </button>
 
                 <div className="profile-info-container">
@@ -261,9 +295,13 @@ const Profile = () => {
             <Modal isOpen={profilePicModalOpen} toggle={toggleProfilePicModal}>
                 <ModalHeader toggle={toggleProfilePicModal}>Change Profile Picture</ModalHeader>
                 <ModalBody>
+                    <div className="profile-pic-preview-container">
+                        <img src={preview} alt="Profile Preview" className="profile-pic-preview"/>
+                    </div>
                     <Input type="file" accept="image/*" onChange={handleProfilePicChange}/>
                 </ModalBody>
                 <ModalFooter>
+                    <Button color="primary" onClick={saveProfilePic}>Save</Button>
                     <Button color="secondary" onClick={toggleProfilePicModal}>Cancel</Button>
                 </ModalFooter>
             </Modal>
