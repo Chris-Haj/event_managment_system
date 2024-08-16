@@ -7,6 +7,7 @@ import './Profile.css';
 import camIcon from '../Images/camIcon.png'; // Camera icon
 import defaultProfilePic from '../Images/DefaultProfilePic.png'; // Default profile picture
 import EventInfoModal from '../components/EventInfoModal'; // Import the EventInfoModal component
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input } from 'reactstrap';
 
 const Profile = () => {
     const { currentUser } = useContext(AuthContext);
@@ -21,6 +22,8 @@ const Profile = () => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null); // State for selected event
     const [infoModalOpen, setInfoModalOpen] = useState(false); // State to control EventInfoModal
+    const [editProfileModal, setEditProfileModal] = useState(false); // State for edit profile modal
+    const [profilePicModalOpen, setProfilePicModalOpen] = useState(false); // State for profile picture change modal
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -70,6 +73,8 @@ const Profile = () => {
     };
 
     const toggleInfoModal = () => setInfoModalOpen(!infoModalOpen);
+    const toggleEditProfileModal = () => setEditProfileModal(!editProfileModal);
+    const toggleProfilePicModal = () => setProfilePicModalOpen(!profilePicModalOpen);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -112,15 +117,52 @@ const Profile = () => {
         }
     };
 
+    const handleProfilePicChange = async (e) => {
+        if (e.target.files[0]) {
+            try {
+                const userDocRef = doc(db, 'users', currentUser.uid);
+                const file = URL.createObjectURL(e.target.files[0]);
+                setProfilePic(file); // Set the new profile picture preview
+
+                // Update in Firebase (add your upload logic here if needed)
+                await updateDoc(userDocRef, {
+                    profilePic: file
+                });
+
+                toggleProfilePicModal(); // Close the modal after updating
+            } catch (error) {
+                console.error("Error updating profile picture: ", error);
+            }
+        }
+    };
+
+    const handleEditProfile = async () => {
+        if (!currentUser) return;
+
+        try {
+            const userDocRef = doc(db, 'users', currentUser.uid);
+
+            // Update the user's document with new fields
+            await updateDoc(userDocRef, {
+                email,
+                phoneNumber
+            });
+
+            toggleEditProfileModal();
+        } catch (error) {
+            console.error("Error updating profile: ", error);
+        }
+    };
+
     return (
         <div className="profile-page-container">
             {/* Profile Section */}
             <div className="profile-container">
                 <div className="profile-pic-container">
-                    <img src={profilePic} alt="Profile" className="profile-pic" />
+                    <img src={profilePic} alt="Profile" className="profile-pic"/>
                 </div>
-                <button className="cam-icon-btn">
-                    <img src={camIcon} alt="Change Profile Picture" />
+                <button className="cam-icon-btn" onClick={toggleProfilePicModal}>
+                    <img src={camIcon} alt="Change Profile Picture"/>
                 </button>
 
                 <div className="profile-info-container">
@@ -130,7 +172,7 @@ const Profile = () => {
                         <p><strong>Age:</strong> {age}</p>
                         <p><strong>Email:</strong> {email}</p>
                         <p><strong>Phone Number:</strong> {phoneNumber}</p>
-                        <button className="edit-profile-btn">Edit Profile</button>
+                        <button className="edit-profile-btn" onClick={toggleEditProfileModal}>Edit Profile</button>
                     </div>
                 </div>
             </div>
@@ -171,6 +213,61 @@ const Profile = () => {
                     </button>
                 )}
             </div>
+
+            {/* Edit Profile Modal */}
+            <Modal isOpen={editProfileModal} toggle={toggleEditProfileModal}>
+                <ModalHeader toggle={toggleEditProfileModal}>Edit Profile</ModalHeader>
+                <ModalBody>
+                    <Form>
+                        <FormGroup>
+                            <Label for="firstName">First Name</Label>
+                            <Input type="text" id="firstName" value={firstName} disabled/>
+                        </FormGroup>
+                        <FormGroup>
+                            <Label for="lastName">Last Name</Label>
+                            <Input type="text" id="lastName" value={lastName} disabled/>
+                        </FormGroup>
+                        <FormGroup>
+                            <Label for="birthDate">Birth Date</Label>
+                            <Input type="date" id="birthDate" value={birthDate} disabled/>
+                        </FormGroup>
+                        <FormGroup>
+                            <Label for="email">Email</Label>
+                            <Input
+                                type="email"
+                                id="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                        </FormGroup>
+                        <FormGroup>
+                            <Label for="phoneNumber">Phone Number</Label>
+                            <Input
+                                type="text"
+                                id="phoneNumber"
+                                value={phoneNumber}
+                                onChange={(e) => setPhoneNumber(e.target.value)}
+                            />
+                        </FormGroup>
+                    </Form>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="primary" onClick={handleEditProfile}>Save Changes</Button>
+                    <Button color="secondary" onClick={toggleEditProfileModal}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+
+            {/* Change Profile Picture Modal */}
+            <Modal isOpen={profilePicModalOpen} toggle={toggleProfilePicModal}>
+                <ModalHeader toggle={toggleProfilePicModal}>Change Profile Picture</ModalHeader>
+                <ModalBody>
+                    <Input type="file" accept="image/*" onChange={handleProfilePicChange}/>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={toggleProfilePicModal}>Cancel</Button>
+                </ModalFooter>
+            </Modal>
+
             <EventInfoModal isOpen={infoModalOpen} toggle={toggleInfoModal} event={selectedEvent}/>
         </div>
     );
