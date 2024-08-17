@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { getDocs, collection } from 'firebase/firestore';
+import { getDocs, collection, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
@@ -8,9 +8,8 @@ import AuthContext from '../context/AuthContext';
 import EventInfoModal from '../components/EventInfoModal';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
-
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-
+import {addEventToGoogleCalendar} from "../utils/GoogleCalender";
 const localizer = momentLocalizer(moment);
 
 const Events = () => {
@@ -61,7 +60,38 @@ const Events = () => {
             return;
         }
 
-        // Handle event joining logic...
+        try {
+            const userId = currentUser.uid;
+            const eventDoc = doc(db, 'events', id);
+            const userDoc = doc(db, 'users', userId);
+            const eventSnap = await getDoc(eventDoc);
+
+            if (eventSnap.exists()) {
+                const eventData = eventSnap.data();
+                if (eventData.registrants && eventData.registrants.includes(userId)) {
+                    setModalMessage('You are already registered for this event.');
+                    toggleModal();
+                    return;
+                }
+            }
+
+            await updateDoc(eventDoc, {
+                registrants: arrayUnion(userId)
+            });
+
+            await updateDoc(userDoc, {
+                registeredEvents: arrayUnion(id)
+            });
+
+            addEventToGoogleCalendar(event);
+
+
+            setModalMessage('Successfully registered for the event!');
+            toggleModal();
+        } catch (error) {
+            setModalMessage(`Error joining event: ${error.message}`);
+            toggleModal();
+        }
     };
 
     const formatDate = (dateString) => {
