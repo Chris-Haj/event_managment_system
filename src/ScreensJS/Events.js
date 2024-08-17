@@ -3,7 +3,7 @@ import {getDocs, collection, updateDoc, doc, arrayUnion, getDoc} from 'firebase/
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
-import {Modal, ModalHeader, ModalBody, ModalFooter, Button} from 'reactstrap';
+import {Modal, ModalHeader, ModalBody, ModalFooter, Button, Spinner} from 'reactstrap';
 import AuthContext from '../context/AuthContext';
 import EventInfoModal from '../components/EventInfoModal';
 import {Calendar, momentLocalizer} from 'react-big-calendar';
@@ -16,6 +16,7 @@ const localizer = momentLocalizer(moment);
 const Events = () => {
     const {currentUser} = useContext(AuthContext);
     const [events, setEvents] = useState([]);
+    const [showCalendarButton, setShowCalendarButton] = useState(false);
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [modal, setModal] = useState(false);
     const [modalMessage, setModalMessage] = useState('');
@@ -64,6 +65,10 @@ const Events = () => {
             return;
         }
 
+
+        setModalMessage('Registering for the event...');
+        toggleModal();
+
         try {
             const userId = currentUser.uid;
             const eventDoc = doc(db, 'events', id);
@@ -75,25 +80,23 @@ const Events = () => {
                 const registrants = eventData.registrants || [];
                 const waitingList = eventData.waitingList || [];
                 if (eventData.registrants && eventData.registrants.includes(userId)) {
+                    setLoading(false);
                     setModalMessage('You are already registered for this event.');
-                    toggleModal();
                     return;
                 }
 
-                if (registrants.length >= eventData.maxRegistrants) {
+                if (registrants.length >= eventData.registrantLimit) {
                     if (waitingList.includes(userId)) {
+                        setLoading(false);
                         setModalMessage('You are already on the waiting list for this event.');
-                        toggleModal();
                         return;
                     }
                     await updateDoc(eventDoc, {
                         waitingList: arrayUnion(userId)
                     });
+                    setLoading(false);
                     setModalMessage('You have been added to the waiting list for this event.');
-                    toggleModal();
-                    return;
-                }
-                else{
+                } else {
                     await updateDoc(eventDoc, {
                         registrants: arrayUnion(userId)
                     });
@@ -101,14 +104,24 @@ const Events = () => {
                     await updateDoc(userDoc, {
                         registeredEvents: arrayUnion(id)
                     });
-                    addEventToGoogleCalendar(eventSnap.data()); // Add event to Google Calendar
+
+                    setSelectedEvent(eventData); // Store event data for Google Calendar
+                    setLoading(false);
+                    setModalMessage('Successfully registered for the event!');
+                    setShowCalendarButton(true); // Show "Add to Calendar" button
                 }
             }
-            setModalMessage('Successfully registered for the event!');
-            toggleModal();
         } catch (error) {
+            setLoading(false);
             setModalMessage(`Error joining event: ${error.message}`);
-            toggleModal();
+        }
+    };
+
+    const handleAddToGoogleCalendar = () => {
+        if (selectedEvent) {
+            addEventToGoogleCalendar(selectedEvent);
+            setModalMessage('Event added to Google Calendar.');
+            setShowCalendarButton(false);
         }
     };
 
@@ -311,8 +324,22 @@ const Events = () => {
 
             <Modal isOpen={modal} toggle={toggleModal}>
                 <ModalHeader toggle={toggleModal}>Event Registration</ModalHeader>
-                <ModalBody>{modalMessage}</ModalBody>
+                <ModalBody>
+                    {loading ? (
+                        <div className="text-center">
+                            <Spinner color="primary"/>
+                            <p>{modalMessage}</p>
+                        </div>
+                    ) : (
+                        <p>{modalMessage}</p>
+                    )}
+                </ModalBody>
                 <ModalFooter>
+                    {showCalendarButton && (
+                        <Button color="success" onClick={handleAddToGoogleCalendar}>
+                            Add to Calendar
+                        </Button>
+                    )}
                     <Button color="secondary" onClick={toggleModal}>Close</Button>
                 </ModalFooter>
             </Modal>

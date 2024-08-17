@@ -1,5 +1,5 @@
 import React, {useContext, useState, useEffect} from 'react';
-import {doc, getDoc, updateDoc, arrayRemove} from 'firebase/firestore';
+import {doc, getDoc, updateDoc, arrayRemove, arrayUnion} from 'firebase/firestore';
 import {getStorage, ref, deleteObject, uploadBytes, getDownloadURL} from 'firebase/storage';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import db from '../DB/firebase';
@@ -105,25 +105,50 @@ const Profile = () => {
             const userId = currentUser.uid;
             const userDocRef = doc(db, 'users', userId);
             const eventDocRef = doc(db, 'events', eventId);
+            const eventDoc = await getDoc(eventDocRef);
 
-            // Remove the event from the user's registeredEvents array
-            await updateDoc(userDocRef, {
-                registeredEvents: arrayRemove(eventId)
-            });
+            if (eventDoc.exists()) {
+                const eventData = eventDoc.data();
+                const registrants = eventData.registrants || [];
+                const waitingList = eventData.waitingList || [];
 
-            // Remove the user from the event's registrants array
-            await updateDoc(eventDocRef, {
-                registrants: arrayRemove(userId)
-            });
+                // Remove the event from the user's registeredEvents array
+                await updateDoc(userDocRef, {
+                    registeredEvents: arrayRemove(eventId)
+                });
 
-            // Update the local state to reflect the change
-            setRegisteredEvents((prevEvents) =>
-                prevEvents.filter((event) => event.id !== eventId)
-            );
+                // Remove the user from the event's registrants array
+                await updateDoc(eventDocRef, {
+                    registrants: arrayRemove(userId)
+                });
+
+                // If there's a waiting list, move the first person to the registrants
+                if (waitingList.length > 0) {
+                    const nextInLine = waitingList[0]; // Get the first person in the waiting list
+
+                    // Add the first person from the waiting list to the registrants array
+                    await updateDoc(eventDocRef, {
+                        registrants: arrayUnion(nextInLine),
+                        waitingList: arrayRemove(nextInLine) // Remove them from the waiting list
+                    });
+
+                    // Update the user's registeredEvents array to reflect their registration
+                    const nextUserDocRef = doc(db, 'users', nextInLine);
+                    await updateDoc(nextUserDocRef, {
+                        registeredEvents: arrayUnion(eventId)
+                    });
+                }
+
+                // Update the local state to reflect the change
+                setRegisteredEvents((prevEvents) =>
+                    prevEvents.filter((event) => event.id !== eventId)
+                );
+            }
         } catch (error) {
             console.error("Error leaving event: ", error);
         }
     };
+
 
     const handleProfilePicChange = (e) => {
         if (e.target.files[0]) {

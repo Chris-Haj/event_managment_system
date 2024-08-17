@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import {useNavigate} from 'react-router-dom'; // Import useNavigate
 import {getFirestore, collection, addDoc, doc, getDoc, updateDoc} from 'firebase/firestore';
 import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
@@ -31,10 +31,27 @@ const ManageBase = () => {
     const [currentEventId, setCurrentEventId] = useState(null); // Track the ID of the event being edited
     const navigate = useNavigate(); // Initialize navigate
 
+    const [locations, setLocations] = useState([]);
+    const [ages, setAges] = useState([]);
+    const [dressCodes, setDressCodes] = useState([]);
 
     const toggle = tab => {
         if (activeTab !== tab) setActiveTab(tab);
     };
+
+    useEffect(() => {
+        const fetchEventFields = async () => {
+            const locationsSnapshot = await getDocs(collection(db, 'eventLocations'));
+            const agesSnapshot = await getDocs(collection(db, 'eventAges'));
+            const dressCodesSnapshot = await getDocs(collection(db, 'eventDressCodes'));
+
+            setLocations(locationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setAges(agesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setDressCodes(dressCodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        };
+
+        fetchEventFields();
+    }, []);
 
     const toggleModal = () => setModal(!modal);
 

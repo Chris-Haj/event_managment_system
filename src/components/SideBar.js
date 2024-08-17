@@ -1,10 +1,10 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Offcanvas } from 'react-bootstrap';
-import { FaBars } from 'react-icons/fa';
+import { /*Link,*/ useNavigate} from 'react-router-dom';
+import {Offcanvas} from 'react-bootstrap';
+// import { FaBars } from 'react-icons/fa';
 import './SideBar.css';
 
-const SideBar = ({ show, handleClose }) => {
+const SideBar = ({show, handleClose}) => {
     const navigate = useNavigate();
 
     const handleNavigation = (path) => {
