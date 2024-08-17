@@ -1,6 +1,7 @@
-import React, {useRef ,useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { Form, FormGroup, Input, Button } from 'reactstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './AuthPage.css'; // Import custom CSS for additional styling
 import logo from '../Images/YovalimLogo.png';
@@ -10,98 +11,110 @@ function SignIn({ email, setEmail, password, setPassword, handleLogin, setHasAcc
     return (
         <div>
             <h2>Login</h2>
-            <form onSubmit={handleLogin}>
-                <div className="input-group mb-3">
-                    <input
+            <Form onSubmit={handleLogin}>
+                <FormGroup>
+                    <Input
                         type="email"
-                        className="form-control"
                         placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
-                </div>
-                <div className="input-group mb-3">
-                    <input
+                </FormGroup>
+                <FormGroup>
+                    <Input
                         type="password"
-                        className="form-control"
                         placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                </div>
-                <button type="submit" className="btn btn-primary btn-block mb-4">Login</button>
-            </form>
-            <div className="forgot-password">Forgot password?</div>
-            <div className="toggle-form">
-                Don't have an account? <span className="sign-up-link" onClick={() => setHasAccount(false)}>Sign up here</span>
+                </FormGroup>
+                <Button type="submit" color="primary" block>
+                    Login
+                </Button>
+            </Form>
+            <div className="text-center mt-3">
+                Forgot password?
+            </div>
+            <div className="text-center mt-3">
+                Don't have an account?{' '}
+                <span className="sign-up-link" onClick={() => setHasAccount(false)}>
+                    Sign up here
+                </span>
             </div>
         </div>
     );
 }
 
 function SignUp({
-    email,
-    setEmail,
-    password,
-    setPassword,
-    confirmPassword,
-    setConfirmPassword,
-    handleSignUp,
-    setHasAccount,
-    firstName,
-    setFirstName,
-    lastName,
-    setLastName,
-    birthDate,
-    setBirthDate,
-}) {
+                    email,
+                    setEmail,
+                    password,
+                    setPassword,
+                    confirmPassword,
+                    setConfirmPassword,
+                    handleSignUp,
+                    setHasAccount,
+                    firstName,
+                    setFirstName,
+                    lastName,
+                    setLastName,
+                    birthDate,
+                    setBirthDate,
+                }) {
     const currentDate = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
     const minDate = new Date(new Date().setFullYear(new Date().getFullYear() - 100)).toISOString().split('T')[0]; // Get date 100 years ago in YYYY-MM-DD format
     const birthDateInputRef = useRef();
 
+    // Placeholder logic using state
+    const [showPlaceholder, setShowPlaceholder] = useState(true);
+
     const handleFocus = () => {
-        if (birthDateInputRef.current) {
-            birthDateInputRef.current.type = 'date';
-        }
+        setShowPlaceholder(false); // Hide placeholder on focus
     };
 
     const handleBlur = () => {
-        if (birthDateInputRef.current && !birthDate) {
-            birthDateInputRef.current.type = 'text';
+        if (!birthDate) {
+            setShowPlaceholder(true); // Show placeholder if no date is selected
         }
     };
 
     return (
-        <div>
+        <div className='SignUp-Submission'>
             <h2>Sign Up</h2>
-            <form onSubmit={handleSignUp}>
-                <div className="input-group mb-3">
-                    <input
+            <Form onSubmit={handleSignUp}>
+                <FormGroup>
+                    <p>First Name</p>
+                    <Input
                         type="text"
-                        className="form-control"
-                        placeholder="First Name"
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         required
                     />
-                </div>
-                <div className="input-group mb-3">
-                    <input
+                </FormGroup>
+                <FormGroup>
+                    <p>Last Name</p>
+                    <Input
                         type="text"
-                        className="form-control"
-                        placeholder="Last Name"
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         required
                     />
-                </div>
-                <div className="input-group mb-3 position-relative">
-                    <input
-                        type="text"
+                </FormGroup>
+                <FormGroup className="position-relative">
+                    {/* Show placeholder if no date is selected */}
+                    {(
+                        <div
+                            onClick={handleFocus}
+                            className="birthdate-placeholder"
+                        >
+                            Birth Date
+                        </div>
+                    )}
+                    <Input
+                        type="date"
                         className="form-control"
-                        placeholder="Birth Date"
                         value={birthDate}
                         onChange={(e) => setBirthDate(e.target.value)}
                         onFocus={handleFocus}
@@ -111,46 +124,47 @@ function SignUp({
                         min={minDate}
                         required
                     />
-                </div>
-                <div className="input-group mb-3">
-                    <input
+                </FormGroup>
+                <FormGroup>
+                    <p>Email</p>
+                    <Input
                         type="email"
-                        className="form-control"
-                        placeholder="Email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
                     />
-                </div>
-                <div className="input-group mb-3">
-                    <input
+                </FormGroup>
+                <FormGroup>
+                    <p>Password</p>
+                    <Input
                         type="password"
-                        className="form-control"
-                        placeholder="Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
-                </div>
-                <div className="input-group mb-3">
-                    <input
+                </FormGroup>
+                <FormGroup>
+                <p>Confirm Password</p>
+                    <Input
                         type="password"
-                        className="form-control"
-                        placeholder="Confirm Password"
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                     />
-                </div>
-                <button type="submit" className="btn btn-primary btn-block mb-4">Sign Up</button>
-            </form>
-            <div className="toggle-form">
-                Already have an account? <span className="sign-up-link" onClick={() => setHasAccount(true)}>Login here</span>
+                </FormGroup>
+                <Button type="submit" color="primary" block>
+                    Sign Up
+                </Button>
+            </Form>
+            <div className="text-center mt-3">
+                Already have an account?{' '}
+                <span className="sign-up-link" onClick={() => setHasAccount(true)}>
+                    Login here
+                </span>
             </div>
         </div>
     );
 }
-
 
 function AuthPage({ onLogin }) {
     const [hasAccount, setHasAccount] = useState(true);
@@ -242,7 +256,7 @@ function AuthPage({ onLogin }) {
                         setBirthDate={setBirthDate}
                     />
                 )}
-                {error && <p className="text-danger">{error}</p>}
+                {error && <p className="text-danger text-center">{error}</p>}
             </div>
         </div>
     );

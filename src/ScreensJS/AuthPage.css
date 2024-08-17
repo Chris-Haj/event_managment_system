@@ -26,6 +26,9 @@ input[type="password"],input[type="date"],input[type="text"] {
 input::placeholder {
     color: #aaa;
 }
+.SignUp-Submission p{
+    margin-bottom:-4px;
+}
 
 /* Style for the login button */
 button.login-button {

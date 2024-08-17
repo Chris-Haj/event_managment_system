@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import db from '../DB/firebase';
 import { Button, ListGroup, ListGroupItem } from 'reactstrap';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'react-bootstrap-icons'; // If using Bootstrap Icons
 
 const ViewAges = () => {
     const [ages, setAges] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchAges();
@@ -20,14 +23,24 @@ const ViewAges = () => {
         fetchAges(); // Refresh data after deletion
     };
 
+    const handleBackClick = () => {
+        navigate(-1); // Go back to the previous page
+    };
+
     return (
-        <div>
-            <h2>Recommended Age Ranges</h2>
+        <div className="Manage-Event-ViewFields">
+            <div className="d-flex align-items-center mb-4">
+                <Button color="link" onClick={handleBackClick} className="p-0 me-2">
+                    <ArrowLeft size={45} /> {/* Back arrow icon */}
+                </Button>
+                <h2>Recommended Age Ranges</h2>
+            </div>
             <ListGroup>
                 {ages.map(age => (
-                    <ListGroupItem key={age.id}>
+                    <ListGroupItem key={age.id} className="d-flex justify-content-between align-items-center">
                         {age.age}
-                        <Button close className="ml-2" onClick={() => handleDeleteAge(age.id)} />
+
+                        <Button close onClick={() => handleDeleteAge(age.id)} />
                     </ListGroupItem>
                 ))}
             </ListGroup>

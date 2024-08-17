@@ -29,10 +29,10 @@ function App() {
                 <Route path="/events" element={currentUser ? <EventsPage /> : <Navigate replace to="/" />} />
                 <Route path="/profile" element={currentUser ? <Profile /> : <Navigate replace to="/" />} />
                 <Route path="/manage-base" element={currentUser && currentUser.role === 'admin' ? <ManageBase /> : <Navigate replace to="/" />} />
-                <Route path="/view-registrants/:eventId" element={<ViewRegistrants />} />
-                <Route path="/manage-data/locations" element={<ViewLocations />} />
-                <Route path="/manage-data/age-ranges" element={<ViewAges />} />
-                <Route path="/manage-data/dress-codes" element={<ViewDressCodes />} />
+                <Route path="/view-registrants/:eventId" element={currentUser && currentUser.role === 'admin' ? <ViewRegistrants />: <Navigate replace to="/events" />} />
+                <Route path="/manage-data/locations" element={currentUser && currentUser.role === 'admin' ? <ViewLocations />: <Navigate replace to="/events" />} />
+                <Route path="/manage-data/age-ranges" element={currentUser && currentUser.role === 'admin' ? <ViewAges />: <Navigate replace to="/events" />} />
+                <Route path="/manage-data/dress-codes" element={currentUser && currentUser.role === 'admin' ? <ViewDressCodes />: <Navigate replace to="/events" />} />
             </Routes>
         </Router>
     );

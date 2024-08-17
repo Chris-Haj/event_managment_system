@@ -1,6 +1,6 @@
-import React, {useState,useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {useNavigate} from 'react-router-dom'; // Import useNavigate
-import {getFirestore, collection, addDoc, doc, getDoc, updateDoc} from 'firebase/firestore';
+import {getDocs, collection, addDoc, doc, getDoc, updateDoc} from 'firebase/firestore';
 import {getStorage, ref, uploadBytes, getDownloadURL} from 'firebase/storage';
 import db from '../DB/firebase';
 import ViewEvents from './ViewEvents'; // Import the ViewEvents component
@@ -45,9 +45,9 @@ const ManageBase = () => {
             const agesSnapshot = await getDocs(collection(db, 'eventAges'));
             const dressCodesSnapshot = await getDocs(collection(db, 'eventDressCodes'));
 
-            setLocations(locationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setAges(agesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-            setDressCodes(dressCodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setLocations(locationsSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()})));
+            setAges(agesSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()})));
+            setDressCodes(dressCodesSnapshot.docs.map(doc => ({id: doc.id, ...doc.data()})));
         };
 
         fetchEventFields();
@@ -227,6 +227,7 @@ const ManageBase = () => {
                     <div className="event-edit">
                         <h1>{isEditMode ? 'Edit Event' : 'Add Event'}</h1>
                         <form onSubmit={handleSubmit}>
+                            {/* Event Name */}
                             <div className="mb-3">
                                 <label htmlFor="eventName" className="form-label">Event Name</label>
                                 <input
@@ -238,6 +239,8 @@ const ManageBase = () => {
                                     required
                                 />
                             </div>
+
+                            {/* Description */}
                             <div className="mb-3">
                                 <label htmlFor="description" className="form-label">Description</label>
                                 <textarea
@@ -249,6 +252,8 @@ const ManageBase = () => {
                                     required
                                 ></textarea>
                             </div>
+
+                            {/* Event Date */}
                             <div className="mb-3">
                                 <label htmlFor="eventDate" className="form-label">Event Date</label>
                                 <input
@@ -260,6 +265,8 @@ const ManageBase = () => {
                                     required
                                 />
                             </div>
+
+                            {/* Start Time */}
                             <div className="mb-3">
                                 <label htmlFor="timeStart" className="form-label">Start Time</label>
                                 <input
@@ -271,6 +278,8 @@ const ManageBase = () => {
                                     required
                                 />
                             </div>
+
+                            {/* End Time */}
                             <div className="mb-3">
                                 <label htmlFor="timeEnd" className="form-label">End Time</label>
                                 <input
@@ -282,6 +291,8 @@ const ManageBase = () => {
                                     required
                                 />
                             </div>
+
+                            {/* Main Area (City) */}
                             <div className="mb-3">
                                 <label htmlFor="mainArea" className="form-label">Main Area</label>
                                 <select
@@ -292,11 +303,13 @@ const ManageBase = () => {
                                     required
                                 >
                                     <option value="">Select Main Area</option>
-                                    <option value="Area1">Area 1</option>
-                                    <option value="Area2">Area 2</option>
-                                    <option value="Area3">Area 3</option>
+                                    {locations.map(location => (
+                                        <option key={location.id} value={location.name}>{location.name}</option>
+                                    ))}
                                 </select>
                             </div>
+
+                            {/* Specific Place (Area) */}
                             <div className="mb-3">
                                 <label htmlFor="specificPlace" className="form-label">Specific Place</label>
                                 <select
@@ -307,36 +320,31 @@ const ManageBase = () => {
                                     required
                                 >
                                     <option value="">Select Specific Place</option>
-                                    <option value="Place1">Place 1</option>
-                                    <option value="Place2">Place 2</option>
-                                    <option value="Place3">Place 3</option>
+                                    {locations.find(location => location.name === mainArea)?.areas.map(area => (
+                                        <option key={area} value={area}>{area}</option>
+                                    ))}
                                 </select>
                             </div>
+
+                            {/* Recommended Age */}
                             <div className="mb-3">
                                 <label className="form-label">Recommended Age</label>
-                                <div className="form-check">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id="families"
-                                        value="Families"
-                                        checked={recommendedAge.includes('Families')}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    <label className="form-check-label" htmlFor="families">Families</label>
-                                </div>
-                                <div className="form-check">
-                                    <input
-                                        className="form-check-input"
-                                        type="checkbox"
-                                        id="seniors"
-                                        value="Senior citizens"
-                                        checked={recommendedAge.includes('Senior citizens')}
-                                        onChange={handleCheckboxChange}
-                                    />
-                                    <label className="form-check-label" htmlFor="seniors">Senior citizens</label>
-                                </div>
+                                {ages.map(age => (
+                                    <div className="form-check" key={age.id}>
+                                        <input
+                                            className="form-check-input"
+                                            type="checkbox"
+                                            id={age.age}
+                                            value={age.age}
+                                            checked={recommendedAge.includes(age.age)}
+                                            onChange={handleCheckboxChange}
+                                        />
+                                        <label className="form-check-label" htmlFor={age.age}>{age.age}</label>
+                                    </div>
+                                ))}
                             </div>
+
+                            {/* Dress Code */}
                             <div className="mb-3">
                                 <label htmlFor="dressCode" className="form-label">Dress Code</label>
                                 <select
@@ -347,11 +355,13 @@ const ManageBase = () => {
                                     required
                                 >
                                     <option value="">Select Dress Code</option>
-                                    <option value="Casual">Casual</option>
-                                    <option value="Formal">Formal</option>
-                                    <option value="Costume">Costume</option>
+                                    {dressCodes.map(dressCode => (
+                                        <option key={dressCode.id} value={dressCode.dressCode}>{dressCode.dressCode}</option>
+                                    ))}
                                 </select>
                             </div>
+
+                            {/* Event Image */}
                             <div className="mb-3">
                                 <label htmlFor="eventImage" className="form-label">Event Image</label>
                                 <input
@@ -368,6 +378,8 @@ const ManageBase = () => {
                                     </div>
                                 )}
                             </div>
+
+                            {/* Registrant Limit */}
                             <div className="mb-3">
                                 <label htmlFor="registrantLimit" className="form-label">Registrant Limit (Optional)</label>
                                 <input
@@ -379,6 +391,8 @@ const ManageBase = () => {
                                     min="0"
                                 />
                             </div>
+
+                            {/* Submit/Cancel Buttons */}
                             {isEditMode ? (
                                 <div className="edit-event-buttons">
                                     <button type="submit" className="btn btn-primary">Save Changes</button>

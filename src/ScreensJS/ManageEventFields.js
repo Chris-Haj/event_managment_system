@@ -1,190 +1,222 @@
-
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, addDoc, query, where, getDoc } from 'firebase/firestore';
+import { getDocs, getDoc, collection, addDoc, updateDoc, query, where, onSnapshot, doc } from 'firebase/firestore';
 import db from '../DB/firebase';
-import { Button, Input, Form, FormGroup, Label } from 'reactstrap';
+import { Button, Input, Form, FormGroup, Label, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useNavigate } from 'react-router-dom';
-import ViewLocations from './ViewLocations'; // Import the ViewLocations component
-import Ages from "./ViewAges";
-import ViewDressCodes from "./ViewDressCodes";
 
 const ManageEventFields = () => {
     const [locations, setLocations] = useState([]);
     const [ages, setAges] = useState([]);
     const [dressCodes, setDressCodes] = useState([]);
 
-    const [newLocationName, setNewLocationName] = useState('');
-    const [newArea, setNewArea] = useState('');
+    const [newLocationNames, setNewLocationNames] = useState('');
+    const [newAreas, setNewAreas] = useState('');
     const [selectedLocation, setSelectedLocation] = useState('');
 
-    const [newAge, setNewAge] = useState('');
-    const [newDressCode, setNewDressCode] = useState('');
+    const [newAges, setNewAges] = useState('');
+    const [newDressCodes, setNewDressCodes] = useState('');
+
+    const [modal, setModal] = useState(false);
+    const [modalMessage, setModalMessage] = useState('');
 
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetchEventFields();
+        const unsubscribeLocations = onSnapshot(collection(db, 'eventLocations'), (snapshot) => {
+            setLocations(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        const unsubscribeAges = onSnapshot(collection(db, 'eventAges'), (snapshot) => {
+            setAges(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        const unsubscribeDressCodes = onSnapshot(collection(db, 'eventDressCodes'), (snapshot) => {
+            setDressCodes(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        return () => {
+            unsubscribeLocations();
+            unsubscribeAges();
+            unsubscribeDressCodes();
+        };
     }, []);
 
-    const fetchEventFields = async () => {
-        const locationsSnapshot = await getDocs(collection(db, 'eventLocations'));
-        const agesSnapshot = await getDocs(collection(db, 'eventAges'));
-        const dressCodesSnapshot = await getDocs(collection(db, 'eventDressCodes'));
+    const toggleModal = () => setModal(!modal);
 
-        setLocations(locationsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setAges(agesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-        setDressCodes(dressCodesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    const showModalMessage = (message) => {
+        setModalMessage(message);
+        toggleModal();
     };
 
-    const handleAddLocation = async () => {
-        if (newLocationName.trim()) {
-            const locationQuery = query(collection(db, 'eventLocations'), where('name', '==', newLocationName.trim()));
+    // Function to add multiple locations
+    const handleAddLocations = async () => {
+        const locationNames = newLocationNames.split(',').map(name => name.trim()).filter(name => name);
+
+        for (let locationName of locationNames) {
+            const locationQuery = query(collection(db, 'eventLocations'), where('name', '==', locationName));
             const locationSnapshot = await getDocs(locationQuery);
 
-            if (!locationSnapshot.empty) {
-                alert(`Location "${newLocationName}" already exists.`);
+            if (locationSnapshot.empty) {
+                await addDoc(collection(db, 'eventLocations'), { name: locationName, areas: [] });
+            } else {
+                showModalMessage(`Location "${locationName}" already exists.`);
                 return;
             }
-
-            await addDoc(collection(db, 'eventLocations'), { name: newLocationName.trim(), areas: [] });
-            setNewLocationName('');
-            fetchEventFields(); // Refresh data
-            alert(`Location "${newLocationName}" added successfully.`);
         }
+
+        setNewLocationNames(''); // Clear input
+        showModalMessage(`Locations "${locationNames.join(', ')}" added successfully.`);
     };
 
-    const handleAddArea = async () => {
-        if (selectedLocation && newArea.trim()) {
-            const locationDocRef = locations.find(location => location.id === selectedLocation);
-            if (locationDocRef) {
-                const locationData = locationDocRef;
+    // Function to add multiple areas to a selected location
+    const handleAddAreas = async () => {
+        if (selectedLocation && newAreas.trim()) {
+            const locationDocRef = doc(db, 'eventLocations', selectedLocation);
+            const locationDoc = await getDoc(locationDocRef);
 
-                if (locationData.areas.includes(newArea.trim())) {
-                    alert(`Area "${newArea}" already exists in ${locationData.name}.`);
-                    return;
-                }
+            if (locationDoc.exists()) {
+                const locationData = locationDoc.data();
+                const areaNames = newAreas.split(',').map(area => area.trim()).filter(area => area);
 
-                const updatedAreas = [...locationData.areas, newArea.trim()];
-                await addDoc(collection(db, 'eventLocations', selectedLocation), { areas: updatedAreas });
-                setNewArea('');
-                fetchEventFields(); // Refresh data
-                alert(`Area "${newArea}" added successfully to ${locationData.name}.`);
+                const updatedAreas = [...locationData.areas, ...areaNames.filter(area => !locationData.areas.includes(area))];
+                await updateDoc(locationDocRef, { areas: updatedAreas });
+
+                setNewAreas(''); // Clear input
+                showModalMessage(`Areas "${areaNames.join(', ')}" added successfully to ${locationData.name}.`);
             }
         }
     };
 
-    const handleAddAge = async () => {
-        if (newAge.trim()) {
-            const ageQuery = query(collection(db, 'eventAges'), where('age', '==', newAge.trim()));
+    // Function to add multiple ages
+    const handleAddAges = async () => {
+        const ageRanges = newAges.split(',').map(age => age.trim()).filter(age => age);
+
+        for (let ageRange of ageRanges) {
+            const ageQuery = query(collection(db, 'eventAges'), where('age', '==', ageRange));
             const ageSnapshot = await getDocs(ageQuery);
 
-            if (!ageSnapshot.empty) {
-                alert(`Age range "${newAge}" already exists.`);
+            if (ageSnapshot.empty) {
+                await addDoc(collection(db, 'eventAges'), { age: ageRange });
+            } else {
+                showModalMessage(`Age range "${ageRange}" already exists.`);
                 return;
             }
-
-            await addDoc(collection(db, 'eventAges'), { age: newAge.trim() });
-            setNewAge('');
-            fetchEventFields(); // Refresh data
-            alert(`Age range "${newAge}" added successfully.`);
         }
+
+        setNewAges(''); // Clear input
+        showModalMessage(`Age ranges "${ageRanges.join(', ')}" added successfully.`);
     };
 
-    const handleAddDressCode = async () => {
-        if (newDressCode.trim()) {
-            const dressCodeQuery = query(collection(db, 'eventDressCodes'), where('dressCode', '==', newDressCode.trim()));
+    // Function to add multiple dress codes
+    const handleAddDressCodes = async () => {
+        const dressCodes = newDressCodes.split(',').map(dressCode => dressCode.trim()).filter(dressCode => dressCode);
+
+        for (let dressCode of dressCodes) {
+            const dressCodeQuery = query(collection(db, 'eventDressCodes'), where('dressCode', '==', dressCode));
             const dressCodeSnapshot = await getDocs(dressCodeQuery);
 
-            if (!dressCodeSnapshot.empty) {
-                alert(`Dress code "${newDressCode}" already exists.`);
+            if (dressCodeSnapshot.empty) {
+                await addDoc(collection(db, 'eventDressCodes'), { dressCode });
+            } else {
+                showModalMessage(`Dress code "${dressCode}" already exists.`);
                 return;
             }
-
-            await addDoc(collection(db, 'eventDressCodes'), { dressCode: newDressCode.trim() });
-            setNewDressCode('');
-            fetchEventFields(); // Refresh data
-            alert(`Dress code "${newDressCode}" added successfully.`);
         }
+
+        setNewDressCodes(''); // Clear input
+        showModalMessage(`Dress codes "${dressCodes.join(', ')}" added successfully.`);
     };
 
     return (
-        <div>
+        <div className="Manage-Event-Fields">
             <h2>Manage Event Fields</h2>
-
             {/* Locations (Cities and Areas) Management */}
             <h3>Locations (Cities and Areas)</h3>
-            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddLocation(); }}>
+            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddLocations(); }}>
                 <FormGroup>
-                    <Label for="newLocationName" className="mr-2">Add City:</Label>
+                    <Label for="newLocationNames" className="mr-2">Add Locations/Cities:</Label>
                     <Input
                         type="text"
-                        id="newLocationName"
-                        value={newLocationName}
-                        onChange={(e) => setNewLocationName(e.target.value)}
+                        id="newLocationNames"
+                        value={newLocationNames}
+                        onChange={(e) => setNewLocationNames(e.target.value)}
+                        placeholder="Enter locations separated by commas (example: Jerusalem, Tel Aviv)"
                     />
                 </FormGroup>
-                <Button type="submit" color="primary" className="ml-2">Add City</Button>
+                <Button type="submit" color="primary" className="ml-2">Add Locations</Button>
                 <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/locations')}>View Locations</Button>
             </Form>
 
-            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddArea(); }}>
+            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddAreas(); }}>
                 <FormGroup>
-                    <Label for="selectedLocation" className="mr-2">Select City:</Label>
+                    <Label for="selectedLocation" className="mr-2">Select Location/City:</Label>
                     <Input
                         type="select"
                         id="selectedLocation"
                         value={selectedLocation}
                         onChange={(e) => setSelectedLocation(e.target.value)}
                     >
-                        <option value="">Select City</option>
+                        <option value="">Select Location/City</option>
                         {locations.map(location => (
                             <option key={location.id} value={location.id}>{location.name}</option>
                         ))}
                     </Input>
                 </FormGroup>
                 <FormGroup className="ml-3">
-                    <Label for="newArea" className="mr-2">Add Area:</Label>
+                    <Label for="newAreas" className="mr-2">Add Area/s:</Label>
                     <Input
                         type="text"
-                        id="newArea"
-                        value={newArea}
-                        onChange={(e) => setNewArea(e.target.value)}
+                        id="newAreas"
+                        value={newAreas}
+                        onChange={(e) => setNewAreas(e.target.value)}
+                        placeholder="Enter areas separated by commas"
                     />
                 </FormGroup>
-                <Button type="submit" color="primary" className="ml-2">Add Area</Button>
+                <Button type="submit" color="primary" className="ml-2">Add Areas</Button>
             </Form>
 
             {/* Recommended Ages Management */}
             <h3 className="mt-4">Recommended Ages</h3>
-            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddAge(); }}>
+            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddAges(); }}>
                 <FormGroup>
-                    <Label for="newAge" className="mr-2">Add New:</Label>
+                    <Label for="newAges" className="mr-2">Add New Age Range/s:</Label>
                     <Input
                         type="text"
-                        id="newAge"
-                        value={newAge}
-                        onChange={(e) => setNewAge(e.target.value)}
+                        id="newAges"
+                        value={newAges}
+                        onChange={(e) => setNewAges(e.target.value)}
+                        placeholder="Enter age ranges separated by commas"
                     />
                 </FormGroup>
-                <Button type="submit" color="primary" className="ml-2">Add Age</Button>
+                <Button type="submit" color="primary" className="ml-2">Add Age Ranges</Button>
                 <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/age-ranges')}>View Age Ranges</Button>
             </Form>
 
             {/* Dress Codes Management */}
             <h3 className="mt-4">Dress Codes</h3>
-            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddDressCode(); }}>
+            <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddDressCodes(); }}>
                 <FormGroup>
-                    <Label for="newDressCode" className="mr-2">Add New:</Label>
+                    <Label for="newDressCodes" className="mr-2">Add New Dress Codes:</Label>
                     <Input
                         type="text"
-                        id="newDressCode"
-                        value={newDressCode}
-                        onChange={(e) => setNewDressCode(e.target.value)}
+                        id="newDressCodes"
+                        value={newDressCodes}
+                        onChange={(e) => setNewDressCodes(e.target.value)}
+                        placeholder="Enter dress codes separated by commas"
                     />
                 </FormGroup>
-                <Button type="submit" color="primary" className="ml-2">Add Dress Code</Button>
+                <Button type="submit" color="primary" className="ml-2">Add Dress Code/s</Button>
                 <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/dress-codes')}>View Dress Codes</Button>
             </Form>
+
+            {/* Modal for Success Messages */}
+            <Modal isOpen={modal} toggle={toggleModal}>
+                <ModalHeader toggle={toggleModal}>Success</ModalHeader>
+                <ModalBody>{modalMessage}</ModalBody>
+                <ModalFooter>
+                    <Button color="secondary" onClick={toggleModal}>Close</Button>
+                </ModalFooter>
+            </Modal>
         </div>
     );
 };

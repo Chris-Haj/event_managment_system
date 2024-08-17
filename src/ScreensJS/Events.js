@@ -85,7 +85,7 @@ const Events = () => {
                     return;
                 }
 
-                if (registrants.length >= eventData.registrantLimit) {
+                if (eventData.registrantLimit && registrants.length >= eventData.registrantLimit) {
                     if (waitingList.includes(userId)) {
                         setLoading(false);
                         setModalMessage('You are already on the waiting list for this event.');
@@ -96,20 +96,22 @@ const Events = () => {
                     });
                     setLoading(false);
                     setModalMessage('You have been added to the waiting list for this event.');
-                } else {
-                    await updateDoc(eventDoc, {
-                        registrants: arrayUnion(userId)
-                    });
-
-                    await updateDoc(userDoc, {
-                        registeredEvents: arrayUnion(id)
-                    });
-
-                    setSelectedEvent(eventData); // Store event data for Google Calendar
-                    setLoading(false);
-                    setModalMessage('Successfully registered for the event!');
-                    setShowCalendarButton(true); // Show "Add to Calendar" button
+                    return;
                 }
+
+                await updateDoc(eventDoc, {
+                    registrants: arrayUnion(userId)
+                });
+
+                await updateDoc(userDoc, {
+                    registeredEvents: arrayUnion(id)
+                });
+
+                setSelectedEvent(eventData); // Store event data for Google Calendar
+                setLoading(false);
+                setModalMessage('Successfully registered for the event!');
+                setShowCalendarButton(true); // Show "Add to Calendar" button
+
             }
         } catch (error) {
             setLoading(false);
