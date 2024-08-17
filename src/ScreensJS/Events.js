@@ -1,19 +1,20 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { getDocs, collection, updateDoc, doc, arrayUnion, getDoc } from 'firebase/firestore';
+import React, {useEffect, useState, useContext} from 'react';
+import {getDocs, collection, updateDoc, doc, arrayUnion, getDoc} from 'firebase/firestore';
 import db from '../DB/firebase';
 import './Events.css';
 import defaultLogo from '../Images/YovalimLogo.png';
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
+import {Modal, ModalHeader, ModalBody, ModalFooter, Button} from 'reactstrap';
 import AuthContext from '../context/AuthContext';
 import EventInfoModal from '../components/EventInfoModal';
-import { Calendar, momentLocalizer } from 'react-big-calendar';
+import {Calendar, momentLocalizer} from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import {addEventToGoogleCalendar} from "../utils/GoogleCalender";
+import {addEventToGoogleCalendar, initGoogleCalendarClient} from "../utils/GoogleCalendar";
+
 const localizer = momentLocalizer(moment);
 
 const Events = () => {
-    const { currentUser } = useContext(AuthContext);
+    const {currentUser} = useContext(AuthContext);
     const [events, setEvents] = useState([]);
     const [filteredEvents, setFilteredEvents] = useState([]);
     const [modal, setModal] = useState(false);
@@ -31,6 +32,7 @@ const Events = () => {
     const [selectedDateEvents, setSelectedDateEvents] = useState([]); // State for selected date events
     const [selectedDate, setSelectedDate] = useState(null); // State for selected date
 
+
     useEffect(() => {
         const fetchEvents = async () => {
             const querySnapshot = await getDocs(collection(db, 'events'));
@@ -43,9 +45,11 @@ const Events = () => {
             setEvents(eventsList);
             setFilteredEvents(eventsList);
             setLoading(false);
+
         };
 
         fetchEvents();
+        initGoogleCalendarClient();
     }, []);
 
     const toggleModal = () => setModal(!modal);
@@ -73,8 +77,8 @@ const Events = () => {
                     toggleModal();
                     return;
                 }
-            }
 
+            }
             await updateDoc(eventDoc, {
                 registrants: arrayUnion(userId)
             });
@@ -82,9 +86,7 @@ const Events = () => {
             await updateDoc(userDoc, {
                 registeredEvents: arrayUnion(id)
             });
-
-            addEventToGoogleCalendar(event);
-
+            addEventToGoogleCalendar(eventSnap.data()); // Add event to Google Calendar
 
             setModalMessage('Successfully registered for the event!');
             toggleModal();
@@ -103,14 +105,14 @@ const Events = () => {
     };
 
     const handleInfoClick = (event) => {
-        const formattedEvent = { ...event, date: formatDate(event.date) };
+        const formattedEvent = {...event, date: formatDate(event.date)};
         setSelectedEvent(formattedEvent);
         toggleInfoModal();
     };
 
     const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilter({ ...filter, [name]: value });
+        const {name, value} = e.target;
+        setFilter({...filter, [name]: value});
     };
 
     const applyFilters = () => {
@@ -211,7 +213,7 @@ const Events = () => {
                         events={calendarEvents}
                         startAccessor="start"
                         endAccessor="end"
-                        style={{ height: 500 }}
+                        style={{height: 500}}
                         className="event-calendar"
                         selectable
                         onSelectSlot={handleDateClick} // Handle date clicks
@@ -232,7 +234,7 @@ const Events = () => {
                                                             <p className="card-text eventDate"><strong>{event.timeStart}-{event.timeEnd}</strong></p>
                                                         </div>
                                                     </div>
-                                                    <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event" />
+                                                    <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event"/>
                                                     <div className="button-container">
                                                         <button
                                                             className="btn btn-info info-button"
@@ -270,7 +272,7 @@ const Events = () => {
                                         <p className="card-text eventDate"><strong>{event.timeStart}-{event.timeEnd}</strong></p>
                                     </div>
                                 </div>
-                                <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event" />
+                                <img src={event.imageUrl || defaultLogo} className="card-img-top" alt="Event"/>
                                 <div className="button-container">
                                     <button
                                         className="btn btn-info info-button"
@@ -299,7 +301,7 @@ const Events = () => {
                 </ModalFooter>
             </Modal>
 
-            <EventInfoModal isOpen={infoModalOpen} toggle={toggleInfoModal} event={selectedEvent} />
+            <EventInfoModal isOpen={infoModalOpen} toggle={toggleInfoModal} event={selectedEvent}/>
         </div>
     );
 };
