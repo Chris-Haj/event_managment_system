@@ -124,7 +124,7 @@ const ManageEventFields = () => {
                     />
                 </FormGroup>
                 <Button type="submit" color="primary" className="ml-2">Add City</Button>
-                <Button color="info" className="ml-2" onClick={() => navigate('/managedata/locations')}>View Locations</Button>
+                <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/locations')}>View Locations</Button>
             </Form>
 
             <Form inline className="mt-3" onSubmit={(e) => { e.preventDefault(); handleAddArea(); }}>
@@ -167,7 +167,7 @@ const ManageEventFields = () => {
                     />
                 </FormGroup>
                 <Button type="submit" color="primary" className="ml-2">Add Age</Button>
-                <Button color="info" className="ml-2" onClick={() => navigate('/managedata/age-ranges')}>View Age Ranges</Button>
+                <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/age-ranges')}>View Age Ranges</Button>
             </Form>
 
             {/* Dress Codes Management */}
@@ -183,7 +183,7 @@ const ManageEventFields = () => {
                     />
                 </FormGroup>
                 <Button type="submit" color="primary" className="ml-2">Add Dress Code</Button>
-                <Button color="info" className="ml-2" onClick={() => navigate('/managedata/dress-codes')}>View Dress Codes</Button>
+                <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/dress-codes')}>View Dress Codes</Button>
             </Form>
         </div>
     );

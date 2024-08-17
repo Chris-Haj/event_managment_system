@@ -30,9 +30,9 @@ function App() {
                 <Route path="/profile" element={currentUser ? <Profile /> : <Navigate replace to="/" />} />
                 <Route path="/manage-base" element={currentUser && currentUser.role === 'admin' ? <ManageBase /> : <Navigate replace to="/" />} />
                 <Route path="/view-registrants/:eventId" element={<ViewRegistrants />} />
-                <Route path="/manage-base/locations" element={<ViewLocations />} />
-                <Route path="/manage-base/age-ranges" element={<ViewAges />} />
-                <Route path="/manage-base/dress-codes" element={<ViewDressCodes />} />
+                <Route path="/manage-data/locations" element={<ViewLocations />} />
+                <Route path="/manage-data/age-ranges" element={<ViewAges />} />
+                <Route path="/manage-data/dress-codes" element={<ViewDressCodes />} />
             </Routes>
         </Router>
     );
