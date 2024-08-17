@@ -72,22 +72,38 @@ const Events = () => {
 
             if (eventSnap.exists()) {
                 const eventData = eventSnap.data();
+                const registrants = eventData.registrants || [];
+                const waitingList = eventData.waitingList || [];
                 if (eventData.registrants && eventData.registrants.includes(userId)) {
                     setModalMessage('You are already registered for this event.');
                     toggleModal();
                     return;
                 }
 
+                if (registrants.length >= eventData.maxRegistrants) {
+                    if (waitingList.includes(userId)) {
+                        setModalMessage('You are already on the waiting list for this event.');
+                        toggleModal();
+                        return;
+                    }
+                    await updateDoc(eventDoc, {
+                        waitingList: arrayUnion(userId)
+                    });
+                    setModalMessage('You have been added to the waiting list for this event.');
+                    toggleModal();
+                    return;
+                }
+                else{
+                    await updateDoc(eventDoc, {
+                        registrants: arrayUnion(userId)
+                    });
+
+                    await updateDoc(userDoc, {
+                        registeredEvents: arrayUnion(id)
+                    });
+                    addEventToGoogleCalendar(eventSnap.data()); // Add event to Google Calendar
+                }
             }
-            await updateDoc(eventDoc, {
-                registrants: arrayUnion(userId)
-            });
-
-            await updateDoc(userDoc, {
-                registeredEvents: arrayUnion(id)
-            });
-            addEventToGoogleCalendar(eventSnap.data()); // Add event to Google Calendar
-
             setModalMessage('Successfully registered for the event!');
             toggleModal();
         } catch (error) {
