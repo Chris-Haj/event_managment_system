@@ -20,10 +20,27 @@
     border-radius: 10px;
     width: 95%;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.view-registrants-table{
+    width: 100vw;
+    border: black solid 1px;
+    margin-top:20px;
 }
 
 .view-registrants .back-arrow,.view-registrants .download-icon {
     color: #007bff;
+}
+
+.back-arrow{
+    margin-right:17px;
+}
+.download-icon{
+    margin-left:17px;
 }
 
 .view-registrants h1 {
@@ -33,7 +50,90 @@
     text-align: center;
 }
 
-.view-registrants .table {
-    margin-top: 20px;
-    border: black solid 1px;
+.view-registrants {
+    max-width: 95%;
+    overflow-x: auto; /* Enables horizontal scrolling */
+}
+
+.buttonKickOut {
+    display: inline-block;
+    font-weight: 400;
+    color: #fff;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+    background-color: #007bff; /* Default Bootstrap blue */
+    border: 1px solid #007bff;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.buttonKickOut:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+    border-color: #0056b3;
+}
+
+.buttonKickOut:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.5);
+}
+
+.buttonKickOut:active {
+    background-color: #004085; /* Even darker blue when active */
+    border-color: #003768;
+}
+
+.buttonKickOut:disabled {
+    background-color: #007bff;
+    border-color: #007bff;
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+.buttonKickOut {
+    background-color: #dc3545; /* Bootstrap red */
+    border-color: #dc3545;
+}
+
+.buttonKickOut:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.buttonKickOut:active {
+    background-color: #bd2130;
+    border-color: #b21f2d;
+}
+
+
+.view-registrants-table {
+    width: 60vw;
+    font-size: 1.5rem; /* Make the font smaller */
+    white-space: nowrap; /* Prevent content from wrapping */
+}
+
+.view-registrants-table td {
+    border: 1px solid black;
+}
+
+@media (max-width: 500px) { /* Mobile-specific styles */
+    .view-registrants table {
+        width: 60%; /* Make the table full width */
+        overflow-scrolling: touch;
+    }
+    .view-registrants-table th,
+    .view-registrants-table td,.view-registrants-table tr  {
+        /*padding: 0.5rem; !* Reduce padding *!*/
+        font-size: 0.5rem; /* Make the font smaller */
+        border: 1px solid black;
+        padding: -5px;
+    }
+    .view-registrants button{
+        font-size: 0.43rem;
+
+    }
 }

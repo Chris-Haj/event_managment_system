@@ -79,6 +79,9 @@
     border-radius: 5px;
     cursor: pointer;
     transition: all 0.3s;
+    /*background: var(--color-light);*/
+    color: black;
+
 }
 
 .Manage-Event-ViewFields{

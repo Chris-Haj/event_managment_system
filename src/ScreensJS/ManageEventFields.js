@@ -205,7 +205,7 @@ const ManageEventFields = () => {
                         placeholder="Enter dress codes separated by commas"
                     />
                 </FormGroup>
-                <Button type="submit" color="primary" className="ml-2">Add Dress Code/s</Button>
+                <Button type="submit" color="primary" className="ml-2">Add Dress Codes</Button>
                 <Button color="info" className="ml-2" onClick={() => navigate('/manage-data/dress-codes')}>View Dress Codes</Button>
             </Form>
 

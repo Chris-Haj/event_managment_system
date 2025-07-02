@@ -132,7 +132,7 @@ const ViewRegistrants = () => {
                     className="back-arrow"
                     size={35}
                     onClick={() => navigate(-1)}
-                    style={{ cursor: 'pointer' }}
+                    style={{cursor: 'pointer'}}
                 />
                 <h1 className="text-center">
                     {eventName} - Registrants
@@ -141,44 +141,47 @@ const ViewRegistrants = () => {
                     className="download-icon"
                     size={35}
                     onClick={downloadCSV}
-                    style={{ cursor: 'pointer' }}
+                    style={{cursor: 'pointer'}}
                 />
             </div>
 
             {registrants.length > 0 ? (
-                <table className="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone Number</th>
-                        <th>Age</th>
-                        <th>Action</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {registrants.map(registrant => (
-                        <tr key={registrant.id}>
-                            <td>{registrant.firstName} {registrant.lastName}</td>
-                            <td>{registrant.email}</td>
-                            <td>{registrant.phoneNumber || 'N/A'}</td>
-                            <td>{registrant.age}</td>
-                            <td>
-                                <button
-                                    className="btn btn-danger"
-                                    onClick={() => handleKickOut(registrant.id)}
-                                >
-                                    Kick Out
-                                </button>
-                            </td>
+                <div className="view-registrants-table-wrapper">
+                    <table className="table table-striped view-registrants-table">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                            <th>Age</th>
+                            <th>Action</th>
                         </tr>
-                    ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                        {registrants.map(registrant => (
+                            <tr key={registrant.id}>
+                                <td>{registrant.firstName} {registrant.lastName}</td>
+                                <td>{registrant.email}</td>
+                                <td>{registrant.phoneNumber || 'N/A'}</td>
+                                <td>{registrant.age}</td>
+                                <td>
+                                    <button
+                                        className="btn-danger buttonKickOut"
+                                        onClick={() => handleKickOut(registrant.id)}
+                                    >
+                                        Kick
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
             ) : (
                 <p>No registrants for this event.</p>
             )}
         </div>
+
     );
 };
 
